@@ -329,6 +329,8 @@
   .usp{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:860px){
+  .site-header{top:40px}          /* sits below the prototype switcher strip */
+  .filters{top:calc(var(--header-h) + 98px)}
   .plp{grid-template-columns:1fr}
   .filters{display:none}
   .plp-grid{grid-template-columns:repeat(2,1fr)}
@@ -345,7 +347,19 @@
 }
 @media (max-width:560px){
   .cat-strip{grid-template-columns:repeat(3,1fr)}
+  .svc-band{padding:var(--s-5) var(--s-4)}
+  .svc-grid{grid-template-columns:1fr}
+  .svc-item b,.svc-item small{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .flash{padding:var(--s-4)}
+  .section-head{flex-direction:column; align-items:flex-start}
+  .plp-toolbar{gap:var(--s-2)}
+  .plp-toolbar select{width:100% !important}
+  .price-row .now{font-size:var(--fs-3xl)}
+  .crumbs{font-size:var(--fs-sm)}
   .svc-cat-grid{grid-template-columns:1fr}
+  .svc-cat .em{width:44px;height:44px;font-size:22px}
+  .pkg-card{padding:var(--s-4)}
+  .card-pad{padding:var(--s-4)}
   .foot-grid{grid-template-columns:repeat(2,1fr)}
   .cart-line{grid-template-columns:72px 1fr; gap:var(--s-3)}
   .cart-line img{width:72px;height:72px}

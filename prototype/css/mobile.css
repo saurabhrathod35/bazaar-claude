@@ -108,12 +108,18 @@ body.mobile{background:
 .frame-nav{display:flex; gap:8px; align-items:center}
 
 @media (max-width:1000px){
-  .mob-shell{grid-template-columns:1fr; gap:var(--s-6)}
+  .mob-shell{grid-template-columns:minmax(0,1fr); gap:var(--s-6)}
+  .stage{order:-1}                      /* phone frame first, screen list below */
+  .picker h1{font-size:var(--fs-xl)}
+  .picker,.stage{min-width:0}
   .picker{position:static; max-height:none}
-  .picker .list{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:6px}
+  .picker .list{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:6px}
 }
-@media (max-width:440px){
-  .device{width:100%; height:auto; aspect-ratio:390/844; border-radius:32px; padding:8px}
+@media (max-width:560px){
+  .device{width:100%; max-width:390px; height:auto; aspect-ratio:390/844; border-radius:32px; padding:8px}
   .screen{border-radius:26px}
   .mob-shell{padding:var(--s-4) var(--s-3) 90px}
+  .stage{width:100%}
+  .frame-caption p{max-width:100%}
+  .picker .list{grid-template-columns:1fr 1fr}
 }

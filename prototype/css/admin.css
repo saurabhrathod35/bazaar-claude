@@ -123,6 +123,7 @@ body.admin{background:var(--surface-sunken)}
 @media (max-width:1024px){
   .shell{grid-template-columns:1fr}
   .sidebar{position:fixed; z-index:1002; left:0; top:0; width:262px; transform:translateX(-100%); transition:transform var(--t-slow)}
+  .topbar{top:40px}
   .sidebar.open{transform:none}
   .mobile-topbar{display:flex}
   .span-6,.span-8{grid-column:span 12}
@@ -131,6 +132,15 @@ body.admin{background:var(--surface-sunken)}
 }
 @media (max-width:640px){
   .content{padding:var(--s-4)}
+  .list-toolbar{gap:var(--s-2)}
+  .list-toolbar > *{min-width:0}
+  .list-toolbar .search-box,.list-toolbar .select{width:100% !important}
+  .list-toolbar .row{flex-wrap:wrap}
+  .date-filter{overflow-x:auto; width:100%}
+  .date-filter button{white-space:nowrap}
+  .pane-head{flex-wrap:wrap}
+  .arch{grid-template-columns:1fr}
+  .pager{flex-wrap:wrap; gap:var(--s-2)}
   .topbar{padding:var(--s-3) var(--s-4)}
   .topbar .search-box{display:none}
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
