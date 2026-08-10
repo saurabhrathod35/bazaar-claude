@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bazaar Admin — Commerce + Services Console</title>
+<meta name="description" content="Bazaar admin dashboard prototype — catalog, inventory, orders, marketing, services, logistics, analytics and settings.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23141428'/><text y='72' x='50' font-size='62' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>B</text></svg>">
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/dev.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="js/theme.js"></script>
+</head>
+<body class="admin">
+  <div class="shell">
+    <aside class="sidebar"></aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-topbar" id="burger" aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div class="col grow">
+          <span class="crumb" id="adminCrumb">Bazaar Admin</span>
+          <h1 id="adminTitle">Dashboard</h1>
+        </div>
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="adminSearch" placeholder="Jump to a screen…">
+        </div>
+        <span class="tiny muted hide-md" id="adminSearchHint"></span>
+        <button class="icon-btn" id="adminBell" title="Alerts">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M18 15V10a6 6 0 10-12 0v5l-2 3h16z"/><path d="M10 21h4"/></svg>
+          <span class="dot">5</span></button>
+        <span class="avatar avatar-sm hide-sm">AS</span>
+      </header>
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+
+  <script src="js/mock-data.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/admin-modules.js"></script>
+  <script src="js/dev-data.js"></script>
+  <script src="js/dev-mode.js"></script>
+</body>
+</html>

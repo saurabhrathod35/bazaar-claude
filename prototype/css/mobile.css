@@ -1,0 +1,119 @@
+/* ============================================================
+   mobile.css — mobile app prototype (mobile.html)
+   390 × 844 device frame + app UI.
+   ============================================================ */
+body.mobile{background:
+  radial-gradient(900px 500px at 15% 0%, rgba(91,61,245,.16), transparent 60%),
+  radial-gradient(700px 400px at 90% 100%, rgba(15,181,166,.14), transparent 60%), var(--n-100);
+  min-height:100vh}
+
+.mob-shell{display:grid; grid-template-columns:300px 1fr; gap:var(--s-8); max-width:1240px;
+  margin:0 auto; padding:var(--s-7) var(--s-6) 110px}
+
+/* ---------- screen picker ---------- */
+.picker{position:sticky; top:var(--s-6); align-self:start; max-height:calc(100vh - 60px); overflow:auto}
+.picker h1{font-size:var(--fs-2xl); font-weight:800; letter-spacing:-.02em}
+.picker .grp{font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-soft); margin:var(--s-5) 0 var(--s-2)}
+.picker button{display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:9px 12px;
+  border-radius:var(--r-sm); font-size:var(--fs-md); font-weight:600; color:var(--text-muted); transition:all var(--t)}
+.picker button:hover{background:var(--surface); color:var(--text)}
+.picker button.is-active{background:var(--primary); color:#fff; box-shadow:var(--sh-primary)}
+.picker button .n{width:22px; height:22px; border-radius:6px; background:var(--surface-sunken); display:grid;
+  place-items:center; font-size:10px; font-weight:800; flex:none}
+.picker button.is-active .n{background:rgba(255,255,255,.2); color:#fff}
+
+/* ---------- device frame ---------- */
+.stage{display:flex; flex-direction:column; align-items:center; gap:var(--s-4)}
+.device{width:390px; height:844px; background:var(--n-900); border-radius:46px; padding:12px;
+  box-shadow:0 40px 80px rgba(20,20,40,.35), 0 0 0 2px rgba(255,255,255,.06) inset; position:relative; flex:none}
+.device::after{content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:18px; width:130px; height:5px;
+  background:rgba(255,255,255,.5); border-radius:99px; z-index:5}
+.screen{width:100%; height:100%; background:var(--bg); border-radius:36px; overflow:hidden; position:relative;
+  display:flex; flex-direction:column}
+.notch{position:absolute; top:0; left:50%; transform:translateX(-50%); width:126px; height:30px;
+  background:var(--n-900); border-radius:0 0 18px 18px; z-index:20}
+.statusbar{display:flex; align-items:center; justify-content:space-between; padding:10px 22px 4px;
+  font-size:11px; font-weight:700; flex:none; z-index:10}
+.app-body{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch}
+.app-body::-webkit-scrollbar{width:0}
+
+/* ---------- app chrome ---------- */
+.app-top{display:flex; align-items:center; gap:10px; padding:6px 16px 12px; flex:none}
+.app-top .t{font-size:var(--fs-lg); font-weight:750; flex:1}
+.app-search{display:flex; align-items:center; gap:8px; height:40px; padding:0 12px; margin:0 16px 12px;
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-full); font-size:var(--fs-md); color:var(--text-soft)}
+.app-pad{padding:0 16px}
+.app-sec{margin-top:var(--s-5)}
+.app-sec-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 16px}
+.app-sec-head b{font-size:var(--fs-lg); font-weight:750}
+.app-sec-head a{font-size:var(--fs-sm); font-weight:700; color:var(--primary)}
+
+.tabbar{display:flex; align-items:center; justify-content:space-around; padding:8px 6px 22px; flex:none;
+  background:var(--surface); border-top:1px solid var(--border)}
+.tabbar button{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:650;
+  color:var(--text-soft); padding:4px 10px; border-radius:var(--r-sm); position:relative}
+.tabbar button.is-active{color:var(--primary)}
+.tabbar .dot{position:absolute; top:0; right:6px; min-width:15px; height:15px; padding:0 4px; background:var(--accent);
+  color:#fff; font-size:9px; font-weight:800; border-radius:99px; display:grid; place-items:center}
+
+/* ---------- app content pieces ---------- */
+.m-hero{background:linear-gradient(135deg,var(--primary-900),var(--primary)); color:#fff; border-radius:var(--r-lg);
+  padding:16px; margin:0 16px}
+.m-hero h3{font-size:19px; font-weight:800; line-height:1.2}
+.m-cat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:0 16px}
+.m-cat{display:flex; flex-direction:column; align-items:center; gap:5px; font-size:10px; font-weight:650; text-align:center}
+.m-cat .em{width:52px;height:52px;border-radius:16px;background:var(--surface);border:1px solid var(--border);
+  display:grid;place-items:center;font-size:22px}
+.m-scroll{display:flex; gap:10px; overflow-x:auto; padding:0 16px 4px}
+.m-scroll::-webkit-scrollbar{height:0}
+.m-pcard{width:140px; flex:none; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); overflow:hidden}
+.m-pcard img{width:100%; aspect-ratio:1/1; object-fit:cover}
+.m-pcard .b{padding:8px}
+.m-pcard .nm{font-size:11px; font-weight:600; line-height:1.3; height:2.6em; overflow:hidden}
+.m-pcard .pr{font-size:13px; font-weight:800; margin-top:3px}
+.m-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px}
+.m-list-item{display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--surface)}
+.m-list-item img{width:64px;height:64px;border-radius:10px;object-fit:cover;flex:none}
+.m-svc{display:flex; align-items:center; gap:10px; padding:10px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-md)}
+.m-svc .em{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:none}
+.m-banner{margin:0 16px; padding:14px; border-radius:var(--r-md); background:linear-gradient(120deg,var(--secondary-100),var(--primary-50));
+  border:1px solid var(--primary-100)}
+.m-cta{position:sticky; bottom:0; display:flex; gap:8px; padding:12px 16px; background:var(--surface);
+  border-top:1px solid var(--border)}
+.m-chip-row{display:flex; gap:8px; overflow-x:auto; padding:0 16px 10px}
+.m-chip-row::-webkit-scrollbar{height:0}
+.m-slot{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:0 16px}
+.m-onboard{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+  padding:32px 28px; gap:14px}
+.m-onboard .art{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;font-size:74px;
+  background:linear-gradient(135deg,var(--primary-100),var(--secondary-100))}
+.m-dots{display:flex; gap:6px; justify-content:center}
+.m-dots i{width:7px;height:7px;border-radius:99px;background:var(--n-300)}
+.m-dots i.on{width:20px;background:var(--primary)}
+.m-splash{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  background:linear-gradient(140deg,var(--primary-900),var(--primary) 60%,var(--accent)); color:#fff}
+.m-splash .mark{width:76px;height:76px;border-radius:24px;background:rgba(255,255,255,.16);display:grid;place-items:center;
+  font-size:36px;font-weight:800;animation:pop 600ms both}
+.m-otp{display:flex; gap:8px; justify-content:center}
+.m-otp input{width:44px;height:52px;text-align:center;font-size:20px;font-weight:800;border:1px solid var(--border-strong);
+  border-radius:12px;background:var(--surface)}
+.m-step{display:flex; align-items:center; gap:6px; padding:0 16px; font-size:10px; font-weight:700; color:var(--text-soft)}
+.m-step .on{color:var(--primary)}
+
+.frame-caption{text-align:center}
+.frame-caption b{font-size:var(--fs-lg)}
+.frame-caption p{font-size:var(--fs-md); color:var(--text-muted); max-width:420px; margin:4px auto 0}
+.frame-nav{display:flex; gap:8px; align-items:center}
+
+@media (max-width:1000px){
+  .mob-shell{grid-template-columns:1fr; gap:var(--s-6)}
+  .picker{position:static; max-height:none}
+  .picker .list{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:6px}
+}
+@media (max-width:440px){
+  .device{width:100%; height:auto; aspect-ratio:390/844; border-radius:32px; padding:8px}
+  .screen{border-radius:26px}
+  .mob-shell{padding:var(--s-4) var(--s-3) 90px}
+}

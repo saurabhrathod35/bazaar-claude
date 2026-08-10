@@ -1,0 +1,131 @@
+/* ============================================================
+   theme.css — theme switcher control + dark-mode corrections
+   Loaded after global.css on every page.
+   ============================================================ */
+
+/* ---------- floating control ---------- */
+.theme-btn{
+  position:fixed; left:16px; bottom:76px; z-index:1099; display:flex; align-items:center; gap:8px;
+  height:38px; padding:0 14px 0 10px; border-radius:var(--r-full);
+  background:var(--surface); color:var(--text); border:1px solid var(--border-strong);
+  font-size:12px; font-weight:700; box-shadow:var(--sh-md); transition:all var(--t)
+}
+.theme-btn:hover{border-color:var(--primary); color:var(--primary)}
+.theme-btn .tsw{width:18px; height:18px; border-radius:50%; border:1px solid rgba(0,0,0,.15); flex:none}
+
+.theme-panel{
+  position:fixed; left:16px; bottom:124px; z-index:1100; width:320px; max-height:min(76vh, 640px);
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg);
+  box-shadow:var(--sh-lg); display:none; flex-direction:column; overflow:hidden
+}
+.theme-panel.open{display:flex; animation:pop var(--t-slow) both}
+.tp-head{display:flex; align-items:center; justify-content:space-between; padding:12px 14px;
+  border-bottom:1px solid var(--border); flex:none}
+.tp-head b{font-size:14px}
+.tp-x{width:26px; height:26px; border-radius:var(--r-xs); color:var(--text-muted)}
+.tp-x:hover{background:var(--surface-sunken); color:var(--text)}
+.tp-body{padding:14px; overflow-y:auto}
+.tp-label{font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--text-soft); margin:14px 0 8px}
+.tp-body > .tp-label:first-child{margin-top:0}
+
+.tp-seg{display:flex; gap:4px; background:var(--surface-sunken); padding:4px; border-radius:var(--r-sm)}
+.tp-seg button{flex:1; padding:7px 6px; border-radius:var(--r-xs); font-size:11px; font-weight:700;
+  color:var(--text-muted); transition:all var(--t)}
+.tp-seg button:hover{color:var(--text)}
+.tp-seg button.on{background:var(--surface); color:var(--primary); box-shadow:var(--sh-xs)}
+
+.tp-presets{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+.tp-presets button{display:flex; align-items:center; gap:8px; padding:8px; border-radius:var(--r-sm);
+  border:1.5px solid var(--border); background:var(--surface); transition:all var(--t)}
+.tp-presets button:hover{border-color:var(--primary-300)}
+.tp-presets button.on{border-color:var(--primary); background:var(--primary-50)}
+.tp-presets .dots{display:flex; flex:none}
+.tp-presets .dots i{width:12px; height:12px; border-radius:50%; display:block; margin-right:-4px;
+  border:1.5px solid var(--surface)}
+.tp-presets .pname{font-size:11px; font-weight:650; color:var(--text)}
+
+.tp-color{display:flex; align-items:center; gap:10px; padding:7px 0}
+.tp-color input[type=color]{width:34px; height:34px; padding:0; border:1px solid var(--border-strong);
+  border-radius:var(--r-sm); background:none; cursor:pointer; flex:none}
+.tp-color input[type=color]::-webkit-color-swatch-wrapper{padding:3px}
+.tp-color input[type=color]::-webkit-color-swatch{border:none; border-radius:calc(var(--r-sm) - 3px)}
+.tp-color .col{flex:1; display:flex; flex-direction:column; line-height:1.3}
+.tp-color b{font-size:12px}
+.tp-color small{font-size:10px; color:var(--text-soft)}
+.tp-hex{width:78px; height:30px; padding:0 8px; text-align:center; text-transform:uppercase;
+  font-family:ui-monospace,Menlo,monospace; font-size:11px; font-weight:700;
+  border:1px solid var(--border-strong); border-radius:var(--r-xs); background:var(--surface); color:var(--text)}
+.tp-hex:focus{outline:none; border-color:var(--primary)}
+.tp-note{margin-top:14px; padding:10px; border-radius:var(--r-sm); background:var(--surface-alt);
+  font-size:11px; line-height:1.5; color:var(--text-muted)}
+.tp-note b{color:var(--text)}
+.tp-reset{width:100%; margin-top:10px; height:34px; border-radius:var(--r-sm);
+  border:1px solid var(--border-strong); font-size:11px; font-weight:700; color:var(--text-muted)}
+.tp-reset:hover{border-color:var(--error); color:var(--error)}
+
+@media (max-width:860px){
+  .theme-btn{bottom:auto; top:56px; left:10px; height:32px; padding:0 10px 0 8px; font-size:11px}
+  .theme-btn .tlabel{display:none}
+  .theme-panel{left:10px; right:10px; width:auto; top:96px; bottom:auto; max-height:70vh}
+}
+
+/* ============================================================
+   DARK MODE CORRECTIONS
+   global.css flips the surface tokens; these fix the places that
+   legitimately need a hardcoded light value in the light theme.
+   ============================================================ */
+[data-theme="dark"]{
+  --success-100:#10301f; --warning-100:#332508; --error-100:#3a1517; --info-100:#0f2340;
+  --n-50:#101020; --n-100:#181830; --n-200:#26263f; --n-300:#33334f;
+  color-scheme:dark;
+}
+[data-theme="dark"] .badge-success{color:#4ade80}
+[data-theme="dark"] .badge-warning{color:#fbbf24}
+[data-theme="dark"] .badge-error{color:#fb7185}
+[data-theme="dark"] .badge-info{color:#7dabff}
+[data-theme="dark"] .badge-neutral{background:var(--surface-sunken); color:var(--text-muted)}
+[data-theme="dark"] .badge-primary{color:var(--primary-300)}
+[data-theme="dark"] .pct{background:var(--success-100); color:#4ade80}
+[data-theme="dark"] .tag{background:var(--surface-sunken); color:var(--text-muted)}
+
+/* storefront */
+[data-theme="dark"] .p-wish{background:rgba(21,21,42,.9); color:var(--text-muted)}
+[data-theme="dark"] .p-oos{background:rgba(13,13,24,.78); color:var(--text)}
+[data-theme="dark"] .flash .p-card{background:var(--surface)}
+[data-theme="dark"] .brand-chip .lg{background:var(--surface-sunken); color:var(--text)}
+[data-theme="dark"] .svc-band{border-color:var(--border)}
+[data-theme="dark"] .site-footer{background:#0a0a14; border-top:1px solid var(--border)}
+[data-theme="dark"] .success-hero .tick{background:var(--success-100); color:#4ade80}
+[data-theme="dark"] .toast{background:var(--surface-alt); border:1px solid var(--border-strong); color:var(--text)}
+[data-theme="dark"] .social button{background:var(--surface)}
+[data-theme="dark"] .skeleton{background:linear-gradient(90deg,var(--n-100),var(--n-200),var(--n-100));
+  background-size:200% 100%}
+[data-theme="dark"] .zoom-hint{background:rgba(0,0,0,.75)}
+[data-theme="dark"] .offer-item{background:var(--surface-alt)}
+[data-theme="dark"] .header-search .search-box{background:var(--surface-sunken)}
+
+/* admin */
+[data-theme="dark"] .shell{background:var(--bg)}
+[data-theme="dark"] .sidebar{background:#0a0a14; border-right:1px solid var(--border)}
+[data-theme="dark"] .table tbody tr:hover{background:var(--surface-alt)}
+[data-theme="dark"] .kpi.accent{background:linear-gradient(135deg,var(--primary-800),var(--primary-600))}
+[data-theme="dark"] .dropzone{background:var(--surface-alt)}
+[data-theme="dark"] .code-block{background:#08080f}
+
+/* mobile frame */
+[data-theme="dark"] body.mobile{background:
+  radial-gradient(900px 500px at 15% 0%, rgba(91,61,245,.14), transparent 60%),
+  radial-gradient(700px 400px at 90% 100%, rgba(15,181,166,.10), transparent 60%), #0a0a14}
+[data-theme="dark"] .device{box-shadow:0 40px 80px rgba(0,0,0,.6), 0 0 0 2px rgba(255,255,255,.08) inset}
+[data-theme="dark"] .tabbar{background:var(--surface); border-top-color:var(--border)}
+[data-theme="dark"] .m-list-item{background:var(--surface)}
+
+/* dev spec page */
+[data-theme="dark"] .flow-node.ext{background:var(--surface-alt)}
+[data-theme="dark"] .env-card{background:var(--surface)}
+
+/* form controls in dark */
+[data-theme="dark"] .select{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23a0a0b8' stroke-width='2'><path d='M4 6l4 4 4-4'/></svg>")}
+[data-theme="dark"] input[type=date],[data-theme="dark"] input[type=datetime-local]{color-scheme:dark}
