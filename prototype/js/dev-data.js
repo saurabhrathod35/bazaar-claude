@@ -30,43 +30,40 @@
     analytics:{id:'analytics',name: 'analytics-collector',       host: 'events.bazaar.in',                tier: 'service' },
     pg:      { id: 'pg',      name: 'PostgreSQL 16 (primary)',   host: 'pg-primary:5432',           tier: 'data' },
     pgro:    { id: 'pgro',    name: 'PostgreSQL (read replica)', host: 'pg-replica:5432',           tier: 'data' },
-    redis:   { id: 'redis',   name: 'Redis 7 (cache + locks)',   host: 'redis-cluster:6379',        tier: 'data' },
     es:      { id: 'es',      name: 'OpenSearch',                host: 'search-cluster:9200',       tier: 'data' },
-    kafka:   { id: 'kafka',   name: 'Kafka (event bus)',         host: 'kafka:9092',                tier: 'data' },
+    kafka:   { id: 'kafka',   name: 'Event queue (Postgres, phase 1)', host: 'pg-primary:5432 (queue table)', tier: 'data' },
     s3:      { id: 's3',      name: 'S3 object store',           host: 's3.ap-south-1',             tier: 'data' },
     razorpay:{ id: 'razorpay',name: 'Razorpay',                  host: 'api.razorpay.com',          tier: 'external' },
     delhivery:{id:'delhivery',name: 'Delhivery',                 host: 'track.delhivery.com',       tier: 'external' },
-    fcm:     { id: 'fcm',     name: 'Firebase Cloud Messaging',  host: 'fcm.googleapis.com',        tier: 'external' },
-    msg91:   { id: 'msg91',   name: 'MSG91 (SMS/OTP)',           host: 'api.msg91.com',             tier: 'external' },
     sendgrid:{ id: 'sendgrid',name: 'SendGrid',                  host: 'api.sendgrid.com',          tier: 'external' },
     partner: { id: 'partner', name: 'Partner App (professionals)',host:'partner.bazaar.in',         tier: 'client' }
   };
 
   /* ---------- 2. SERVICE CATALOGUE ---------- */
   const services = [
-    { id:'identity', owns:'Users, sessions, OTP, addresses, roles, permissions', stack:'Go 1.23 · chi · pgx · Redis',
-      db:'identity_db', scaling:'3–6 pods', notes:'JWT access (15 min) + refresh (30 d). OTP rate-limited per number and per IP.' },
+    { id:'identity', owns:'Users, sessions, OTP, addresses, roles, permissions', stack:'Go 1.23 · chi · pgx',
+      db:'identity_db', scaling:'3–6 pods', notes:'JWT access (15 min) + refresh (30 d). OTP rate-limited per number and per IP; OTP rows expire via a Postgres sweep job.' },
     { id:'catalog', owns:'Products, variants, categories, brands, sizes, attributes, media refs', stack:'Go 1.23 · chi · sqlc · pgx',
-      db:'catalog_db', scaling:'4–10 pods', notes:'Write-light, read-heavy. Reads served from Redis + replica; publishes catalog.* events to reindex search.' },
+      db:'catalog_db', scaling:'4–10 pods', notes:'Write-light, read-heavy. Reads served from the Postgres replica; publishes catalog.* events to reindex search.' },
     { id:'search', owns:'Universal search across products AND services, autocomplete, facets', stack:'Go 1.23 · opensearch-go',
       db:'opensearch', scaling:'3–8 pods', notes:'One federated index with a `kind` field (product | service | category | brand) so one query returns both.' },
-    { id:'cart', owns:'Cart lines (products + services), coupons, price recalculation', stack:'Go 1.23 · chi · go-redis · pgx',
-      db:'cart_db', scaling:'4–8 pods', notes:'Cart is a polymorphic line list. Redis holds live carts; Postgres persists for abandonment campaigns.' },
+    { id:'cart', owns:'Cart lines (products + services), coupons, price recalculation', stack:'Go 1.23 · chi · pgx',
+      db:'cart_db', scaling:'4–8 pods', notes:'Cart is a polymorphic line list, one Postgres row per cart with an `expires_at` TTL — no separate hot store.' },
     { id:'pricing', owns:'Offers, coupons, cart-level rules, tax, bundle discounts', stack:'Go 1.23 · pure-Go rules engine',
       db:'promo_db', scaling:'3–6 pods', notes:'Pure calculation service — the single source of truth for money. Never duplicate this maths in clients.' },
     { id:'inventory', owns:'Stock by SKU × warehouse, reservations, transfers, reorder alerts', stack:'Go 1.23 · sqlc · pgx (serializable tx)',
       db:'inventory_db', scaling:'3–6 pods', notes:'Reservations use SELECT … FOR UPDATE with a TTL. Released by a sweeper job on checkout timeout.' },
-    { id:'order', owns:'Orders, order lines, status machine, returns, refunds', stack:'Go 1.23 · temporal-style saga · segmentio/kafka-go',
+    { id:'order', owns:'Orders, order lines, status machine, returns, refunds', stack:'Go 1.23 · temporal-style saga · Postgres queue (SKIP LOCKED)',
       db:'order_db', scaling:'4–10 pods', notes:'Orchestrates checkout as a saga: reserve stock → charge → confirm → emit events. Compensates on failure.' },
     { id:'payment', owns:'Payment intents, captures, refunds, settlement reconciliation', stack:'Go 1.23 · provider interface per gateway',
       db:'payment_db', scaling:'3–6 pods', notes:'Gateway-agnostic provider interface. Webhooks are the source of truth, never the client callback.' },
-    { id:'booking', owns:'Service catalogue, packages, slots, bookings, booking status machine', stack:'Go 1.23 · go-redis (slot locks) · pgx',
-      db:'booking_db', scaling:'3–6 pods', notes:'Slot capacity per city × category × time window. Redis lock holds a slot for 10 minutes during checkout.' },
-    { id:'allocation', owns:'Professional matching, job dispatch, live status from the partner app', stack:'Go 1.23 · goroutine dispatch pool · Redis GEO',
+    { id:'booking', owns:'Service catalogue, packages, slots, bookings, booking status machine', stack:'Go 1.23 · pgx',
+      db:'booking_db', scaling:'3–6 pods', notes:'Slot capacity per city × category × time window. A Postgres row (`expires_at`) holds a slot for 10 minutes during checkout, atomic UPDATE guards capacity.' },
+    { id:'allocation', owns:'Professional matching, job dispatch, live status from the partner app', stack:'Go 1.23 · goroutine dispatch pool · postgis',
       db:'alloc_db', scaling:'3–6 pods', notes:'Runs T-2h before the slot: scores pros by skill, rating, distance and load, then dispatches with accept/decline.' },
     { id:'logistics', owns:'Shipments, AWB, courier selection, tracking webhooks', stack:'Go 1.23 · resty + circuit breaker',
       db:'logistics_db', scaling:'3–6 pods', notes:'Priority-ordered courier fallback with serviceability check by pincode.' },
-    { id:'notify', owns:'Templates, trigger matrix, push/SMS/email/WhatsApp fan-out', stack:'Go 1.23 · kafka-go consumer groups',
+    { id:'notify', owns:'Templates, trigger matrix, push/SMS/email/WhatsApp fan-out', stack:'Go 1.23 · Postgres queue poller (LISTEN/NOTIFY wake-up)',
       db:'notify_db', scaling:'4–8 pods', notes:'Consumes domain events; every channel is a pluggable provider. Idempotent per (event_id, channel).' },
     { id:'media', owns:'Image upload, resizing, CDN invalidation', stack:'Go 1.23 · bimg/vips · S3',
       db:'s3', scaling:'2–4 pods', notes:'Presigned direct-to-S3 uploads; derivatives generated on first request and cached.' },
@@ -80,14 +77,13 @@
     'catalog.list': {
       title: 'Browse product listing', method: 'GET', path: '/v1/catalog/products',
       query: '?category=c-electronics&sort=recommended&page=1&limit=24',
-      service: 'catalog', auth: 'Optional (guest allowed)', cache: 'CDN 60s · Redis 300s', slo: 'p95 < 180 ms',
+      service: 'catalog', auth: 'Optional (guest allowed)', cache: 'CDN 60s', slo: 'p95 < 180 ms',
       steps: [
         ['web', 'Client request', 'GET /v1/catalog/products?category=…', 0],
         ['cdn', 'CDN lookup', 'HIT for anonymous traffic, MISS when personalised', 8],
         ['gw', 'API Gateway', 'Rate limit 600 rpm/IP · route by path prefix', 4],
         ['catalog', 'catalog-service', 'Resolve category subtree, apply filters and sort', 22],
-        ['redis', 'Redis', 'GET catalog:list:{hash} — hit ratio ≈ 82%', 3],
-        ['pgro', 'Postgres replica', 'SELECT … FROM products JOIN variants (on cache miss)', 31],
+        ['pgro', 'Postgres replica', 'SELECT … FROM products JOIN variants (on CDN miss)', 31],
         ['catalog', 'Response', '200 OK · 24 products, facets, total count', 2]
       ],
       request: { headers: { 'x-bazaar-city': 'Mumbai', 'x-request-id': 'req_8f21…' } },
@@ -97,7 +93,7 @@
     'search.universal': {
       title: 'Universal search (products + services)', method: 'GET', path: '/v1/search',
       query: '?q=AC&city=Mumbai&kinds=product,service,category,brand',
-      service: 'search', auth: 'Optional', cache: 'Redis 120s per (q, city)', slo: 'p95 < 120 ms',
+      service: 'search', auth: 'Optional', cache: 'CDN 60s per (q, city)', slo: 'p95 < 120 ms',
       steps: [
         ['web', 'Client request', 'Debounced 250 ms after typing stops', 0],
         ['gw', 'API Gateway', 'Rate limit 120 rpm/session', 3],
@@ -119,8 +115,8 @@
         ['catalog', 'catalog-service (gRPC)', 'GetVariant(variantId) → price, MRP, status', 18],
         ['inventory', 'inventory-service (gRPC)', 'CheckAvailability(sku, qty) — soft check only', 15],
         ['pricing', 'pricing-promo-service', 'Recalculate totals, auto-apply eligible offers', 21],
-        ['redis', 'Redis', 'SET cart:{cartId} EX 30d', 3],
-        ['kafka', 'Kafka', 'emit cart.item_added', 4]
+        ['pg', 'Postgres', 'UPSERT cart row, expires_at = now() + 30d', 6],
+        ['kafka', 'Event queue', 'emit cart.item_added', 4]
       ],
       request: { kind: 'product', variantId: 'p6-white-15ton', qty: 1 },
       response: { cartId: 'crt_91f2', lineCount: 1, subtotal: 42999, savings: 13991, suggestedServices: ['pk-ac-install'] },
@@ -136,7 +132,7 @@
         ['booking', 'booking-service (gRPC)', 'GetPackage(packageId) → price, duration, city availability', 19],
         ['booking', 'Serviceability check', 'Is this package live in the customer\'s pincode?', 12],
         ['pricing', 'pricing-promo-service', 'Apply bundle rule: AC + installation = ₹1,000 off', 18],
-        ['kafka', 'Kafka', 'emit cart.service_added (feeds attach-rate analytics)', 4]
+        ['kafka', 'Event queue', 'emit cart.service_added (feeds attach-rate analytics)', 4]
       ],
       request: { kind: 'service', packageId: 'pk-ac-install', linkedVariantId: 'p6-white-15ton' },
       response: { lineCount: 2, subtotal: 44498, bundleDiscount: 1000, requiresSlot: true },
@@ -149,8 +145,7 @@
         ['web', 'Client request', 'POST { code: "SAVE500" }', 0],
         ['gw', 'API Gateway', 'Auth + 20 rpm/user throttle (brute-force guard)', 4],
         ['pricing', 'pricing-promo-service', 'Load rule, validate window, min cart, scope and per-user cap', 16],
-        ['pg', 'Postgres', 'SELECT … FROM coupons WHERE code = $1 FOR SHARE', 9],
-        ['redis', 'Redis', 'INCR coupon:usage:{code} (atomic global limit)', 3],
+        ['pg', 'Postgres', 'SELECT … FROM coupons WHERE code = $1 FOR UPDATE — atomic global usage increment', 9],
         ['pricing', 'Recalculate', 'Discount, delivery waiver, GST on the discounted base', 8]
       ],
       request: { code: 'SAVE500' },
@@ -171,7 +166,7 @@
         ['razorpay', 'Razorpay', 'POST /v1/orders → checkout handoff to the client', 180],
         ['payment', 'Webhook: payment.captured', 'Signature-verified callback confirms the charge', 60],
         ['order', 'Commit saga', 'Order → CONFIRMED · convert reservation to deduction · confirm slot', 25],
-        ['kafka', 'Kafka', 'emit order.placed, booking.confirmed, inventory.deducted', 6],
+        ['kafka', 'Event queue', 'emit order.placed, booking.confirmed, inventory.deducted', 6],
         ['logistics', 'logistics-service', 'Pick courier by priority + pincode serviceability → AWB', 55],
         ['notify', 'notification-service', 'Fan-out confirmation: push + SMS + email', 30]
       ],
@@ -187,11 +182,11 @@
         ['app', 'Client request', 'POST { packageId, addressId, date, slot, notes }', 0],
         ['gw', 'API Gateway', 'Auth + idempotency', 5],
         ['booking', 'booking-service', 'Validate package × city × slot capacity', 18],
-        ['redis', 'Redis', 'SET slot:{city}:{date}:{time} NX EX 600 — atomic slot hold', 4],
+        ['pg', 'Postgres', 'UPDATE slots SET capacity_held += 1 WHERE capacity_held < capacity, expires_at = now() + 600s — atomic slot hold', 6],
         ['payment', 'payment-service', 'Create intent (or mark pay-after-service)', 38],
         ['razorpay', 'Razorpay', 'Payment capture', 170],
         ['booking', 'Confirm', 'Booking → BOOKING_CONFIRMED · decrement slot capacity', 16],
-        ['kafka', 'Kafka', 'emit booking.confirmed', 4],
+        ['kafka', 'Event queue', 'emit booking.confirmed', 4],
         ['notify', 'notification-service', 'Confirmation on push + SMS + WhatsApp', 28]
       ],
       request: { packageId: 'pk-ac-basic', addressId: 'ad1', date: '2026-08-11', slot: '11:00 AM' },
@@ -200,15 +195,15 @@
     },
     'allocation.assign': {
       title: 'Assign a professional (async job)', method: 'JOB', path: 'allocation.assign_worker',
-      service: 'allocation', auth: 'Internal (mTLS)', cache: 'Redis geo index', slo: 'runs T-2h, p95 < 3 s',
+      service: 'allocation', auth: 'Internal (mTLS)', cache: 'None', slo: 'runs T-2h, p95 < 3 s',
       steps: [
         ['kafka', 'Trigger', 'booking.confirmed consumed · schedule job at slot − 2h', 0],
         ['allocation', 'allocation-service', 'Load eligible pros: skill match, city, availability window', 26],
-        ['redis', 'Redis GEO', 'GEOSEARCH pros:{city} BYRADIUS 8km — nearest first', 8],
+        ['pg', 'Postgres + postgis', 'SELECT … WHERE ST_DWithin(location, pro_location, 8000) — nearest first', 10],
         ['allocation', 'Score & rank', 'rating 40% · distance 25% · load 20% · acceptance history 15%', 12],
         ['partner', 'Partner app dispatch', 'Push offer to top pro · 90-second accept window', 90],
         ['allocation', 'Confirm or fall through', 'On decline/timeout, offer to the next ranked pro', 20],
-        ['kafka', 'Kafka', 'emit booking.professional_assigned', 4],
+        ['kafka', 'Event queue', 'emit booking.professional_assigned', 4],
         ['notify', 'notification-service', 'Customer gets pro name, photo, rating and live-track link', 26]
       ],
       request: { bookingId: 'SB50020' },
@@ -223,7 +218,7 @@
         ['gw', 'API Gateway', 'Auth · RBAC check against role permission matrix', 7],
         ['inventory', 'inventory-service', 'Append to the stock ledger (append-only, never UPDATE)', 15],
         ['pg', 'Postgres', 'INSERT INTO stock_ledger · UPDATE stock_summary in one transaction', 18],
-        ['kafka', 'Kafka', 'emit inventory.adjusted', 4],
+        ['kafka', 'Event queue', 'emit inventory.adjusted', 4],
         ['search', 'search-service', 'Reindex availability flag for affected SKUs', 22],
         ['notify', 'notification-service', 'If crossing back above 0 → fire "Back in Stock" to waitlist', 25]
       ],
@@ -233,14 +228,14 @@
     },
     'catalog.upsert': {
       title: 'Create / update product (admin)', method: 'POST', path: '/v1/catalog/products',
-      service: 'catalog', auth: 'Bearer JWT · scope catalog:write', cache: 'Invalidates CDN + Redis', slo: 'p95 < 400 ms',
+      service: 'catalog', auth: 'Bearer JWT · scope catalog:write', cache: 'Invalidates CDN', slo: 'p95 < 400 ms',
       steps: [
         ['admin', 'Admin console', 'POST product with nested variant matrix', 0],
         ['gw', 'API Gateway', 'Auth · RBAC (Catalog Manager or above)', 6],
         ['catalog', 'catalog-service', 'Validate schema · generate SKUs for colour × size', 26],
         ['pg', 'Postgres', 'Transaction: upsert product + variants + attribute links', 34],
         ['media', 'media-service', 'Attach uploaded S3 keys · queue derivative generation', 18],
-        ['kafka', 'Kafka', 'emit catalog.product_updated', 4],
+        ['kafka', 'Event queue', 'emit catalog.product_updated', 4],
         ['search', 'search-service', 'Consume event → reindex document in products_v7', 30],
         ['cdn', 'CDN', 'Purge /p/{slug} and the parent category listings', 40]
       ],
@@ -257,7 +252,7 @@
         ['logistics', 'logistics-service', 'Map courier code → canonical status', 12],
         ['order', 'order-service', 'Validate state transition against the status machine', 14],
         ['pg', 'Postgres', 'UPDATE orders SET status · INSERT order_status_history', 16],
-        ['kafka', 'Kafka', 'emit order.status_changed', 4],
+        ['kafka', 'Event queue', 'emit order.status_changed', 4],
         ['notify', 'notification-service', 'Trigger matrix picks channels for this status', 26]
       ],
       request: { status: 'OUT_FOR_DELIVERY', awb: 'DL2914772819', scanAt: '2026-08-10T08:12:00+05:30' },
@@ -272,9 +267,7 @@
         ['gw', 'API Gateway', 'Auth · RBAC (Marketing Manager)', 6],
         ['notify', 'notification-service', 'Resolve segment → audience snapshot', 40],
         ['pgro', 'Postgres replica', 'Materialise segment query (batched, 10k rows per page)', 120],
-        ['kafka', 'Kafka', 'Produce one message per recipient per channel', 30],
-        ['fcm', 'FCM', 'Batched push, 500 tokens per request', 200],
-        ['msg91', 'MSG91', 'DLT-approved template SMS', 180],
+        ['kafka', 'Event queue', 'Produce one message per recipient per channel', 30],
         ['sendgrid', 'SendGrid', 'Bulk email with per-user unsubscribe', 160]
       ],
       request: { title: 'Weekend Sale 🎉', segmentId: 'sg2', channels: ['push', 'email'] },
@@ -283,15 +276,15 @@
     },
     'identity.otp': {
       title: 'Login with OTP', method: 'POST', path: '/v1/auth/otp/verify',
-      service: 'identity', auth: 'Public (rate limited)', cache: 'Redis OTP store', slo: 'p95 < 250 ms',
+      service: 'identity', auth: 'Public (rate limited)', cache: 'None', slo: 'p95 < 250 ms',
       steps: [
         ['app', 'Client request', 'POST { phone, otp, deviceId }', 0],
         ['gw', 'API Gateway', '5 attempts / 10 min / number · 30 / hour / IP', 5],
         ['identity', 'identity-service', 'Compare against hashed OTP, constant-time', 12],
-        ['redis', 'Redis', 'GET otp:{phone} · DEL on success (single use)', 3],
+        ['pg', 'Postgres', 'SELECT … FROM otp_challenges WHERE phone = $1 AND expires_at > now() · DELETE on success (single use)', 6],
         ['pg', 'Postgres', 'Upsert user · create session row', 20],
         ['identity', 'Issue tokens', 'Access JWT 15 min · refresh token 30 d, rotating', 8],
-        ['kafka', 'Kafka', 'emit user.logged_in', 4]
+        ['kafka', 'Event queue', 'emit user.logged_in', 4]
       ],
       request: { phone: '+919820041122', otp: '••••••', deviceId: 'dev_a91f' },
       response: { accessToken: 'eyJhbGciOi…', refreshToken: 'rt_…', expiresIn: 900, user: { id: 'u1', name: 'Aarav Sharma' } },
@@ -307,12 +300,11 @@
     { layer: 'Partner app (pros)', choice: 'React Native', why: 'Job accept/decline, live status, earnings. Offline-tolerant write queue for weak-network homes.' },
     { layer: 'Shared frontend code', choice: 'pnpm workspace: `packages/api-client`, `packages/types`, `packages/ui-tokens`', why: 'Types generated from the Go services\' OpenAPI/protobuf, so a backend field rename breaks the web and app build immediately.' },
     { layer: 'API layer', choice: 'REST + JSON over Kong gateway; gRPC (protobuf) service-to-service', why: 'REST is the pragmatic public contract for React and React Native; gRPC internally for latency and compile-time-typed contracts between Go services.' },
-    { layer: 'Microservices', choice: 'Go 1.23 — chi router, pgx/sqlc, go-redis, kafka-go, grpc-go', why: 'Small static binaries (~15 MB images, sub-second cold start), goroutines for the fan-out this domain is full of (allocation dispatch, notification fan-out, courier calls), and predictable memory under Indian festive traffic spikes.' },
+    { layer: 'Microservices', choice: 'Go 1.23 — chi router, pgx/sqlc, grpc-go', why: 'Small static binaries (~15 MB images, sub-second cold start), goroutines for the fan-out this domain is full of (allocation dispatch, notification fan-out, courier calls), and predictable memory under Indian festive traffic spikes.' },
     { layer: 'Go service toolkit', choice: 'sqlc (typed SQL), golang-migrate, wire (DI), testcontainers-go, testify, golangci-lint', why: 'No ORM magic over money and stock — hand-written SQL, compile-time-checked. Integration tests run against a real Postgres in a container.' },
-    { layer: 'Primary database', choice: 'PostgreSQL 16, database-per-service', why: 'Transactional integrity for money, stock and slots. No shared tables between services.' },
-    { layer: 'Cache & locks', choice: 'Redis 7', why: 'Cart sessions, catalog cache, slot locks, rate limits, geo index for pro matching.' },
+    { layer: 'Primary database', choice: 'PostgreSQL 16 + postgis, database-per-service', why: 'Transactional integrity for money, stock and slots. TTL-bound rows (cart, OTP, reservations, slot holds) instead of a second cache store — no shared tables between services.' },
     { layer: 'Search', choice: 'OpenSearch', why: 'Federated product + service index with facets and typo tolerance.' },
-    { layer: 'Event bus', choice: 'Kafka (MSK)', why: 'Durable domain events power notifications, search reindex, analytics and the allocation worker.' },
+    { layer: 'Event bus', choice: 'Postgres queue table (phase 1) — SKIP LOCKED + LISTEN/NOTIFY; RabbitMQ (Amazon MQ) phase 2+', why: 'One less broker to run for phase-1 traffic — outbox rows already live in Postgres (see ADR 0003); swap to RabbitMQ only if fan-out volume outgrows a single-table queue.' },
     { layer: 'Analytics store', choice: 'ClickHouse', why: 'Fast funnel and cohort queries without touching transactional Postgres.' },
     { layer: 'Object storage', choice: 'S3 + CloudFront', why: 'Direct-to-S3 presigned uploads; edge-cached derivatives.' },
     { layer: 'Infrastructure', choice: 'AWS ap-south-1 (Mumbai), EKS, Terraform, Helm, ArgoCD', why: 'Data residency in India, GitOps deploys, reproducible environments.' },
@@ -330,7 +322,7 @@
 │   │   │   ├── grpcserver/          gRPC server impl for internal callers
 │   │   │   ├── service/             business rules, no SQL, no HTTP — unit tested here
 │   │   │   ├── repo/                sqlc-generated queries + pgx pool
-│   │   │   └── event/               kafka producer, outbox publisher
+│   │   │   └── event/               rabbitmq publisher, outbox relayer
 │   │   ├── db/migrations/           golang-migrate, expand → migrate → contract
 │   │   ├── db/query.sql             hand-written SQL, sqlc generates typed Go
 │   │   ├── api/openapi.yaml         public REST contract (generates the TS client)
@@ -343,7 +335,7 @@
 │   ├── httpx/    middleware: auth, request-id, otel, recover, rate limit
 │   ├── money/    integer paise type, no floats anywhere
 │   ├── errs/     error codes → HTTP status mapping (one contract, all services)
-│   ├── outbox/   transactional outbox → Kafka
+│   ├── outbox/   transactional outbox → Postgres queue table (RabbitMQ phase 2+)
 │   └── otelx/    tracing/metrics bootstrap
 ├── apps/
 │   ├── web/      React 19 + Vite + TS (storefront, SSR render server)
@@ -357,19 +349,19 @@
     ['Service template', 'Every service is the same shape: cmd → handler → service → repo. A new service is a `make new-service NAME=x` scaffold, so the twelfth service costs a day, not a sprint.'],
     ['Handlers stay thin', 'Decode, validate, map to a domain call, map errors to `pkg/errs`. No business logic in handlers — that is what makes the service layer unit-testable without HTTP.'],
     ['sqlc over ORM', 'SQL is written by hand in `db/query.sql`; sqlc generates typed Go. Stock and money queries are readable and reviewable, and a bad column name fails the build.'],
-    ['Transactional outbox', 'Domain event rows are written in the same Postgres transaction as the state change, then relayed to Kafka by a publisher goroutine. No "order saved but event lost" class of bug.'],
+    ['Transactional outbox', 'Domain event rows are written in the same Postgres transaction as the state change, into a queue table other services poll with SELECT … FOR UPDATE SKIP LOCKED (LISTEN/NOTIFY wakes pollers instantly). No "order saved but event lost" class of bug, and no second broker in phase 1.'],
     ['Saga in order-service', 'Checkout is an orchestrated saga with explicit compensations: release reservation, release slot hold, void payment intent. Each step is idempotent and retried with backoff.'],
     ['Concurrency where it pays', 'PDP composition, allocation dispatch and notification fan-out use errgroup with per-call context deadlines — the exact work that would serialise in a single-threaded runtime.'],
     ['Context everywhere', '`ctx` is the first argument of every function that crosses a boundary. It carries the trace id, the deadline and cancellation from the gateway all the way to the SQL driver.'],
     ['Graceful degradation', 'Every outbound provider call sits behind a timeout, a circuit breaker and a fallback (next courier by priority, next payment gateway, queue the notification).'],
-    ['Testing pyramid', 'Table-driven unit tests on the service layer; testcontainers-go integration tests against real Postgres, Redis and Kafka; contract tests generated from protobuf and OpenAPI.'],
-    ['One binary per service', 'Static build in a distroless image. Kubernetes HPA on CPU and Kafka consumer lag; typical pod holds 128–256 MB.']
+    ['Testing pyramid', 'Table-driven unit tests on the service layer; testcontainers-go integration tests against a real Postgres (including its queue table); contract tests generated from protobuf and OpenAPI.'],
+    ['One binary per service', 'Static build in a distroless image. Kubernetes HPA on CPU and queue-table backlog (rows past their `available_at`); typical pod holds 128–256 MB.']
   ];
 
   const commsRules = [
     ['React / React Native → backend', 'REST + JSON through Kong only. Clients never call a service directly and never hold service URLs.'],
     ['Service → service (sync)', 'gRPC with protobuf, mTLS, 300 ms default deadline, retry budget on idempotent reads only.'],
-    ['Service → service (async)', 'Kafka domain events. The producer knows nothing about consumers — that is how the services domain was added without touching order-service.'],
+    ['Service → service (async)', 'Postgres-queue domain events (phase 1; RabbitMQ phase 2+ if volume demands it). The producer knows nothing about consumers — that is how the services domain was added without touching order-service.'],
     ['Read-your-own-data', 'A service never queries another service\'s database. Cross-domain reads are gRPC calls or a locally projected read model built from events.'],
     ['Shared code', '`pkg/` holds plumbing (middleware, money type, error codes) only. Shared business logic across services is banned — it recreates the monolith.'],
     ['Frontend types', 'The TypeScript API client is generated from the Go services\' OpenAPI spec in CI. Hand-written response interfaces are not allowed to drift.']

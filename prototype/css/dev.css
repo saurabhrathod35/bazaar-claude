@@ -92,14 +92,23 @@ body.devdoc{background:var(--bg)}
 .doc-sec > h2{font-size:var(--fs-2xl); font-weight:800; letter-spacing:-.02em; margin-bottom:var(--s-2)}
 .doc-sec > p.lead{color:var(--text-muted); max-width:78ch; margin-bottom:var(--s-5)}
 
-.flow-map{display:grid; grid-template-columns:repeat(5,1fr); gap:var(--s-3); align-items:stretch}
+.flow-map{position:relative; display:grid; grid-template-columns:repeat(5,1fr); gap:var(--s-3); align-items:stretch}
 .flow-col{display:flex; flex-direction:column; gap:8px}
 .flow-col h6{font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--text-soft); text-align:center}
-.flow-node{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px; font-size:var(--fs-sm)}
+.flow-node{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px; font-size:var(--fs-sm);
+  transition:box-shadow .2s, border-color .2s, transform .2s}
 .flow-node b{display:block; font-size:var(--fs-md)}
 .flow-node.core{background:linear-gradient(135deg,var(--primary-900),var(--primary)); color:#fff; border:none}
 .flow-node.core b{color:#fff}
 .flow-node.ext{border-style:dashed}
+.flow-node.is-hit{border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-100), 0 0 16px var(--primary); transform:translateY(-2px); z-index:2}
+
+/* ---------- live flow animation (architecture diagram) ---------- */
+.flow-anim-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:var(--s-3)}
+.flow-caption{font-family:ui-monospace,Menlo,monospace; font-size:var(--fs-sm); color:var(--text-muted); min-height:18px}
+.flow-caption b{color:var(--primary)}
+.flow-pulse{position:absolute; width:11px; height:11px; margin:-5.5px; border-radius:50%; background:var(--primary);
+  box-shadow:0 0 10px 2px var(--primary); pointer-events:none; opacity:0; transition:left .5s ease, top .5s ease, opacity .2s; z-index:3}
 
 .op-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; margin-bottom:var(--s-4)}
 .op-head{display:flex; align-items:center; gap:10px; padding:var(--s-4); cursor:pointer; flex-wrap:wrap}

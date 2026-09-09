@@ -20,7 +20,8 @@
   const NAV = [
     { group: null, items: [['dashboard', 'Dashboard', 'grid']] },
     { group: 'Commerce', items: [['orders', 'Orders', 'box', 4], ['products', 'Products', 'tag'],
-      ['categories', 'Categories', 'layers'], ['brands', 'Brands', 'shield'], ['variants', 'Variants', 'copy'],
+      ['categories', 'Categories', 'layers'], ['mkt-listings', 'Marketplace Listings', 'share'],
+      ['brands', 'Brands', 'shield'], ['variants', 'Variants', 'copy'],
       ['sizes', 'Sizes', 'edit'], ['attributes', 'Attributes', 'settings'], ['inventory', 'Inventory', 'box', 3],
       ['reviews', 'Reviews', 'star']] },
     { group: 'Marketing', items: [['offers', 'Offers', 'percent'], ['coupons', 'Coupons', 'tag'],
@@ -531,6 +532,115 @@
     $$('[data-cat-add]').forEach(b => b.onclick = () => formModal('Add sub-category', catFields(null), () => toast('Sub-category created')));
     $$('[data-cat-del]').forEach(b => b.onclick = () => confirmDialog('Delete category?',
       'Products in this category must be reassigned first.', () => toast('Category deleted', 'info'), 'Delete'));
+  });
+
+  /* ============================================================
+     MARKETPLACE LISTINGS — category mapping + bulk CSV listing
+     see docs/architecture/catalog.md for the full design
+     ============================================================ */
+  const listingStatusTone = { listed: 'success', pending: 'warning', rejected: 'error', draft: 'neutral', delisted: 'neutral' };
+  view('mkt-listings', (args) => {
+    const tab = args[0] || 'mapping';
+    const tabs = `<div class="form-tabs" style="margin-bottom:16px">
+      <a href="#/mkt-listings/mapping" class="${tab === 'mapping' ? 'is-active' : ''}">Category Mapping</a>
+      <a href="#/mkt-listings/bulk" class="${tab === 'bulk' ? 'is-active' : ''}">Bulk Listing &amp; CSV Import</a></div>`;
+
+    if (tab === 'bulk') return `${pageHead('Marketplace Listings', 'List products on Amazon, Meesho, Shopify and Myntra — one product, many marketplaces',
+        `<button class="btn btn-outline btn-sm" id="dlTemplate">${icon('download', 14)} Download CSV template</button>
+         <button class="btn btn-primary btn-sm" id="uploadCsv">${icon('plus', 14)} Upload CSV</button>`)}
+      ${tabs}
+      <div class="pane mb-4"><div class="pane-head"><b>Products &amp; listing status</b>
+        <span class="tiny muted">${M.products.length} products</span></div>
+        <div class="pane-body tight">${table([
+          { key: 'name', label: 'Product', render: p => `<div class="cell-media">
+              <img src="${U.productImg(p)}" alt=""><span class="col">
+              <span class="small bold clamp1" style="max-width:220px">${esc(p.name)}</span>
+              <span class="tiny muted">${esc(p.catName)}</span></span></div>` },
+          ...M.marketplaces.map(mkt => ({
+            key: mkt.id, label: mkt.name, align: 'center',
+            render: p => {
+              const l = (M.productMarketplaceListings[p.id] || {})[mkt.id];
+              if (!l) return `<button class="btn btn-ghost btn-sm" data-list="${p.id}" data-mkt="${mkt.id}">${icon('plus', 13)} List</button>`;
+              return `${badge(l.status, listingStatusTone[l.status])}${l.error ? `<div class="tiny" style="color:var(--error-600, #b3272c)" title="${esc(l.error)}">⚠ error</div>` : ''}`;
+            }
+          })),
+          { key: 'act', label: '', align: 'right', render: p => `<button class="btn btn-ghost btn-sm" data-detail="${p.id}">${icon('eye', 15)}</button>` }
+        ], M.products.slice(0, 10))}</div></div>
+      <div class="pane"><div class="pane-head"><b>Import jobs</b><span class="tiny muted">${M.importJobs.length} recent</span></div>
+        <div class="pane-body tight">${table([
+          { key: 'file', label: 'File', render: j => `<b class="small">${esc(j.file)}</b><br><span class="tiny muted">${esc(j.uploadedBy)} · ${timeAgo(j.when)}</span>` },
+          { key: 'marketplaces', label: 'Marketplaces', render: j => j.marketplaces.map(m => `<span class="tag">${esc((M.marketplaces.find(x=>x.id===m)||{}).name || m)}</span>`).join(' ') },
+          { key: 'status', label: 'Status', render: j => badge(j.status, j.status === 'completed' ? 'success' : j.status === 'processing' ? 'warning' : 'error') },
+          { key: 'rows', label: 'Rows', align: 'right', render: j => `<b>${j.total}</b> total`  },
+          { key: 'success', label: 'Success', align: 'right', render: j => `<span style="color:var(--success-600,#0b7a3b)">${j.success}</span>` },
+          { key: 'failed', label: 'Failed', align: 'right', render: j => j.failed ? `<button class="btn btn-ghost btn-sm" data-errs="${j.id}" style="color:var(--error-600,#b3272c)">${j.failed} — view</button>` : '0' }
+        ], M.importJobs)}</div></div>`;
+
+    // Category Mapping tab
+    return `${pageHead('Marketplace Listings', 'Map Bazaar categories to each marketplace\'s own taxonomy — a product can only be listed on a marketplace once its category is mapped',
+        `<button class="btn btn-outline btn-sm" onclick="location.hash='#/mkt-listings/bulk'">${icon('box', 14)} Go to bulk listing</button>`)}
+      ${tabs}
+      <div class="pane"><div class="pane-head"><b>Category → marketplace mapping</b>
+        <span class="tiny muted">${Object.keys(M.categoryMappings).length} categories</span></div>
+        <div class="pane-body tight">${table([
+          { key: 'cat', label: 'Bazaar category', render: catId => `<b class="small">${esc((M.flatCategories.find(c => c.id === catId) || {}).name || catId)}</b>` },
+          ...M.marketplaces.map(mkt => ({
+            key: mkt.id, label: mkt.name, align: 'center',
+            render: catId => {
+              const mapped = M.categoryMappings[catId] && M.categoryMappings[catId][mkt.id];
+              if (mapped) {
+                const mc = (M.marketplaceCategories[mkt.id] || []).find(x => x.id === mapped);
+                return `<span class="tiny" title="${esc(mc ? mc.path : mapped)}">${icon('check', 14)} ${badge('mapped', 'success')}</span>`;
+              }
+              return `<button class="btn btn-outline btn-sm" data-map-cat="${catId}" data-map-mkt="${mkt.id}">${badge('unmapped', 'warning')} Map</button>`;
+            }
+          }))
+        ], Object.keys(M.categoryMappings))}</div></div>`;
+  }, (args) => {
+    const tab = args[0] || 'mapping';
+    if (tab === 'bulk') {
+      $('#dlTemplate').onclick = () => toast('CSV template generated from each marketplace\'s attribute schema — demo only', 'info');
+      $('#uploadCsv').onclick = () => {
+        modal({ title: 'Upload CSV — bulk list products', body: `
+          <div class="form-grid">
+            <div class="field full"><label class="label">Target marketplaces</label>
+              <div class="row gap-3">${M.marketplaces.map(m => `<label class="row gap-2"><input type="checkbox" class="perm-check" data-mkt-pick="${m.id}"><span class="small">${esc(m.name)}</span></label>`).join('')}</div></div>
+            <div class="field full"><label class="label">CSV file</label>
+              <div class="dropzone">${icon('download', 24)}<p class="bold mt-2">Drop CSV here or click to upload</p>
+              <p class="tiny muted">Columns: sku, title, category, price, stock + each selected marketplace's mandatory attributes.</p></div></div>
+          </div>`,
+          foot: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" id="csvGo">Upload &amp; queue import</button>`,
+          onOpen(root) {
+            $('#csvGo', root).onclick = () => {
+              closeModal();
+              toast('Import queued — rows will be validated per marketplace and listed asynchronously', 'info');
+            };
+          } });
+      };
+      $$('[data-list]').forEach(b => b.onclick = () => {
+        const mkt = (M.marketplaces.find(x => x.id === b.dataset.mkt) || {}).name || b.dataset.mkt;
+        toast(`Listing requested on ${mkt} — validating category mapping and attributes`, 'info');
+      });
+      $$('[data-detail]').forEach(b => b.onclick = () => productEditor(productById(b.dataset.detail), true));
+      $$('[data-errs]').forEach(b => b.onclick = () => {
+        const rows = M.importErrors.filter(e => e.importId === b.dataset.errs);
+        modal({ title: 'Import errors — ' + b.dataset.errs, body: table([
+          { key: 'row', label: 'Row' }, { key: 'sku', label: 'SKU' },
+          { key: 'field', label: 'Field' }, { key: 'message', label: 'Message' }
+        ], rows), foot: `<button class="btn btn-primary" data-close>Close</button>` });
+      });
+    } else {
+      $$('[data-map-cat]').forEach(b => b.onclick = () => {
+        const catId = b.dataset.mapCat, mktId = b.dataset.mapMkt;
+        const catName = (M.flatCategories.find(c => c.id === catId) || {}).name || catId;
+        const mktName = (M.marketplaces.find(m => m.id === mktId) || {}).name || mktId;
+        const opts = (M.marketplaceCategories[mktId] || []).map(c => c.path);
+        formModal(`Map "${catName}" → ${mktName}`, [
+          { k: 'mc', label: mktName + ' category', type: 'select', value: opts[0], options: opts,
+            hint: 'Cached from ' + mktName + "'s own taxonomy — refreshed periodically" }
+        ], () => toast(`${catName} mapped to ${mktName} — products under it can now be listed there`));
+      });
+    }
   });
 
   view('brands', () => listShell({

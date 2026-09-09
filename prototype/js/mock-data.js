@@ -680,6 +680,112 @@
     'c-home':        { pkg:'pk-clean-1bhk',      pitch:'Add Home Deep Clean' }
   };
 
+  /* ---------- multi-marketplace category mapping & listings ---------- */
+  const marketplaces = [
+    { id:'amazon', name:'Amazon', logo:'🅰️' },
+    { id:'meesho', name:'Meesho', logo:'🅼' },
+    { id:'shopify', name:'Shopify', logo:'🛍️' },
+    { id:'myntra', name:'Myntra', logo:'Ⓜ️' }
+  ];
+  const marketplaceCategories = {
+    amazon:  [{ id:'amz-ac', path:'Home & Kitchen > Large Appliances > Air Conditioners' },
+              { id:'amz-shoes', path:'Clothing & Accessories > Men > Shoes' },
+              { id:'amz-mobiles', path:'Electronics > Mobiles & Accessories > Smartphones' },
+              { id:'amz-cook', path:'Home & Kitchen > Kitchen & Dining > Cookware' }],
+    meesho:  [{ id:'msh-ac', path:'Home Appliances > Air Conditioner' },
+              { id:'msh-dress', path:"Women's Fashion > Western Wear > Dresses" },
+              { id:'msh-cook', path:'Kitchen & Home > Cookware & Utensils' }],
+    shopify: [{ id:'shp-ac', path:'Appliances / Air Conditioners' },
+              { id:'shp-shoes', path:"Footwear / Men's Shoes" },
+              { id:'shp-dress', path:"Apparel / Women's Dresses" },
+              { id:'shp-mobiles', path:'Electronics / Smartphones' },
+              { id:'shp-cook', path:'Home & Kitchen / Cookware' },
+              { id:'shp-watch', path:'Accessories / Watches' }],
+    myntra:  [{ id:'myn-shoes', path:'Men > Footwear > Casual Shoes' },
+              { id:'myn-dress', path:'Women > Western Wear > Dresses' },
+              { id:'myn-watch', path:'Accessories > Watches' }]
+  };
+  // bazaar category id → { marketplace: marketplaceCategoryId | null }. null/absent = unmapped.
+  const categoryMappings = {
+    'c-ac':          { amazon:'amz-ac', meesho:'msh-ac', shopify:'shp-ac', myntra:null },
+    'c-men-shoes':   { amazon:'amz-shoes', meesho:null, shopify:'shp-shoes', myntra:'myn-shoes' },
+    'c-wom-dress':   { amazon:null, meesho:'msh-dress', shopify:'shp-dress', myntra:'myn-dress' },
+    'c-mobiles':     { amazon:'amz-mobiles', meesho:null, shopify:'shp-mobiles', myntra:null },
+    'c-cook':        { amazon:'amz-cook', meesho:'msh-cook', shopify:'shp-cook', myntra:null },
+    'c-accessories': { amazon:null, meesho:null, shopify:'shp-watch', myntra:'myn-watch' }
+  };
+  // per-marketplace mandatory attributes, keyed by marketplace category id (drives CSV template + validation demo)
+  const marketplaceAttrSchema = {
+    'amz-ac': ['bullet_point_1', 'bullet_point_2', 'bullet_point_3', 'energy_rating', 'capacity_tons'],
+    'msh-ac': ['gst_rate_slab', 'hsn_code'],
+    'shp-ac': ['product_type'],
+    'amz-shoes': ['bullet_point_1', 'size_chart_url', 'material'],
+    'myn-shoes': ['article_type', 'size_chart_id'],
+    'msh-dress': ['gst_rate_slab', 'hsn_code', 'fabric'],
+    'myn-dress': ['article_type', 'size_chart_id', 'occasion']
+  };
+  // product id → per-marketplace listing state
+  const productMarketplaceListings = {
+    'p1': { amazon:{ status:'listed', extId:'B0AMZ001' }, shopify:{ status:'listed', extId:'shp_9911' } },
+    'p3': { amazon:{ status:'pending' }, meesho:{ status:'rejected', error:'Missing gst_rate_slab' } },
+    'p6': { amazon:{ status:'listed', extId:'B0AMZ118' }, meesho:{ status:'listed', extId:'msh_2281' }, shopify:{ status:'draft' } },
+    'p8': { shopify:{ status:'listed', extId:'shp_4471' }, myntra:{ status:'pending' } },
+    'p11':{ myntra:{ status:'listed', extId:'myn_7734' }, amazon:{ status:'rejected', error:'Category unmapped for this product\'s category' } }
+  };
+  const importJobs = [
+    { id:'imp1', file:'diwali-catalog-batch3.csv', marketplaces:['amazon','shopify'], status:'completed', total:240, success:228, failed:12, uploadedBy:'Priya (Catalog Manager)', when:'2026-09-06T11:20:00+05:30' },
+    { id:'imp2', file:'myntra-footwear-refresh.csv', marketplaces:['myntra'], status:'completed', total:86, success:86, failed:0, uploadedBy:'Priya (Catalog Manager)', when:'2026-09-05T16:05:00+05:30' },
+    { id:'imp3', file:'meesho-kitchen-launch.csv', marketplaces:['meesho'], status:'processing', total:150, success:64, failed:3, uploadedBy:'Rahul (Ops)', when:'2026-09-08T09:40:00+05:30' }
+  ];
+  const importErrors = [
+    { importId:'imp1', row:14, sku:'LG-AC15-BLK-1.5Ton', field:'bullet_point_3', message:'Amazon: required attribute missing' },
+    { importId:'imp1', row:52, sku:'NK-SHOE-42-BLU', field:'category', message:'Shopify: row category not mapped to a Shopify collection' },
+    { importId:'imp3', row:9, sku:'PRE-KAD-3L', field:'gst_rate_slab', message:'Meesho: required attribute missing' }
+  ];
+
+  /* ---------- super admin portal (platform ops / on-call) ---------- */
+  const platformTenants = [
+    { id:'t-bazaar', name:'Bazaar Flagship', slug:'bazaar', plan:'Enterprise', status:'active', mrr:842000, createdAt:'2025-11-02T00:00:00+05:30', errorRate:0.4, p95:210, health:'healthy' },
+    { id:'t-urbanfix', name:'UrbanFix Services', slug:'urbanfix', plan:'Growth', status:'active', mrr:186000, createdAt:'2026-02-14T00:00:00+05:30', errorRate:2.1, p95:340, health:'degraded' },
+    { id:'t-rentkart', name:'RentKart', slug:'rentkart', plan:'Growth', status:'active', mrr:94000, createdAt:'2026-05-30T00:00:00+05:30', errorRate:0.2, p95:180, health:'healthy' },
+    { id:'t-quickmart', name:'QuickMart Local', slug:'quickmart', plan:'Starter', status:'onboarding', mrr:0, createdAt:'2026-09-06T00:00:00+05:30', errorRate:0, p95:0, health:'pending' },
+    { id:'t-fixmyhome', name:'FixMyHome', slug:'fixmyhome', plan:'Starter', status:'suspended', mrr:12000, createdAt:'2026-01-10T00:00:00+05:30', errorRate:9.8, p95:1200, health:'critical' }
+  ];
+  const platformFeatureFlags = [
+    { id:'ff1', tenantId:null, key:'rental_vertical', enabled:false, rolloutPct:0, desc:'Enables the rental cart line kind + booking date-range slots' },
+    { id:'ff2', tenantId:null, key:'marketplace_listings', enabled:true, rolloutPct:100, desc:'Amazon/Meesho/Shopify/Myntra category mapping + bulk listing' },
+    { id:'ff3', tenantId:'t-bazaar', key:'whatsapp_notifications', enabled:true, rolloutPct:100, desc:'WhatsApp channel in the notification trigger matrix' },
+    { id:'ff4', tenantId:'t-urbanfix', key:'allocation_v2_scoring', enabled:true, rolloutPct:50, desc:'New professional-scoring weights (rating 40/distance 25/load 20/accept 15)' },
+    { id:'ff5', tenantId:'t-rentkart', key:'rental_vertical', enabled:true, rolloutPct:100, desc:'Overrides the platform default — RentKart is the rental vertical design partner' }
+  ];
+  const platformAuditLog = [
+    { id:'al1', actor:'priya@bazaar.internal', tenantId:'t-rentkart', action:'feature_flag.enabled', target:'rental_vertical', oldValue:'false', newValue:'true', when:'2026-09-07T10:15:00+05:30' },
+    { id:'al2', actor:'rahul@bazaar.internal', tenantId:'t-fixmyhome', action:'tenant.suspended', target:'t-fixmyhome', oldValue:'active', newValue:'suspended', when:'2026-09-06T18:40:00+05:30', note:'Sustained 9.8% error rate, payment webhook signature failures' },
+    { id:'al3', actor:'priya@bazaar.internal', tenantId:'t-quickmart', action:'tenant.onboarded', target:'t-quickmart', oldValue:null, newValue:'onboarding', when:'2026-09-06T09:00:00+05:30' },
+    { id:'al4', actor:'arjun@bazaar.internal', tenantId:'t-urbanfix', action:'feature_flag.rollout_changed', target:'allocation_v2_scoring', oldValue:'25%', newValue:'50%', when:'2026-09-05T14:22:00+05:30' },
+    { id:'al5', actor:'priya@bazaar.internal', tenantId:'t-bazaar', action:'webhook.replayed', target:'payment_evt_88213', oldValue:null, newValue:null, when:'2026-09-04T11:05:00+05:30', note:'Razorpay webhook lost to a deploy race — replayed from provider event log' }
+  ];
+  // canned troubleshoot lookups keyed by what an on-call engineer might paste in
+  const troubleshootLookups = {
+    'req_8f21a93c': { tenantId:'t-urbanfix', traceId:'trc_77c1', correlationId:'corr_9e40', summary:'Checkout saga stuck in COMPENSATING',
+      timeline:[
+        ['order-service', 'Saga started, reservation held', '10:02:01'],
+        ['payment-service', 'CreateIntent → provider timeout after 8s', '10:02:09'],
+        ['order-service', 'Saga compensation triggered: release reservation, release slot hold', '10:02:09'],
+        ['inventory-service', 'Reservation released', '10:02:10'],
+        ['booking-service', 'Slot hold released', '10:02:10'],
+        ['order-service', 'Order → FAILED, customer notified', '10:02:11']
+      ],
+      suggestion:'Matches "Checkout stuck mid-saga" in local-debugging.md — check payment provider status page; this is a provider timeout, not a Bazaar defect.' },
+    'BZ100241': { tenantId:'t-bazaar', traceId:'trc_51a0', correlationId:'corr_2b71', summary:'Order stuck OUT_FOR_DELIVERY, courier webhook never arrived',
+      timeline:[
+        ['logistics-service', 'Shipment created, AWB assigned', '2026-09-03 09:10'],
+        ['delhivery', 'Courier webhook: picked up', '2026-09-03 11:00'],
+        ['logistics-service', 'No further webhook received in 48h', '2026-09-05 09:10']
+      ],
+      suggestion:'Matches "Event never consumed" — check Delhivery\'s webhook delivery log for this AWB; poll their tracking API directly as a fallback.' }
+  };
+
   /* ---------- export ---------- */
   global.MOCK = {
     categories, brands, sizeGroups, attributes, products, reviews,
@@ -690,6 +796,9 @@
     paymentGateways, integrations, apiKeys, roles, permissionModules, permissionMatrix, business,
     revenueTrend, ordersTrend, categorySales, channelSales, funnel, serviceStats,
     addresses, savedPayments, supportTickets, crossSell, COLORS,
+    marketplaces, marketplaceCategories, categoryMappings, marketplaceAttrSchema,
+    productMarketplaceListings, importJobs, importErrors,
+    platformTenants, platformFeatureFlags, platformAuditLog, troubleshootLookups,
     // flat category list helper
     flatCategories: (function flat(list, out = [], depth = 0) {
       list.forEach(c => { out.push(Object.assign({ depth }, c)); if (c.children) flat(c.children, out, depth + 1); });

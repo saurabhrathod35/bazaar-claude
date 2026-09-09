@@ -44,10 +44,13 @@
     </section>`;
   }
 
+  // ops (by key) picked to cycle through the animated diagram — good node coverage, short enough to watch
+  const ANIM_FLOWS = ['catalog.list', 'cart.addProduct', 'order.place', 'booking.create', 'catalog.upsert'];
+
   function architecture() {
     const col = (title, ids, cls) => `<div class="flow-col"><h6>${title}</h6>
       ${ids.map(id => { const h = D.hosts[id];
-        return `<div class="flow-node ${cls || ''}"><b>${esc(h.name)}</b>
+        return `<div class="flow-node ${cls || ''}" id="node-${id}"><b>${esc(h.name)}</b>
           <span class="muted" style="font-family:ui-monospace,monospace;font-size:10px">${esc(h.host)}</span></div>`; }).join('')}</div>`;
     return `<section class="doc-sec" id="architecture">
       <h2>Architecture</h2>
@@ -55,19 +58,28 @@
         Products and services are separate domains that meet in exactly three places: the cart, the payment
         layer and the notification bus.</p>
       <div class="card card-pad">
-        <div class="flow-map">
+        <div class="flow-anim-bar">
+          <button class="btn btn-primary btn-sm" id="flowPlay">${icon('zap', 14)} Play example flows</button>
+          <select class="select" id="flowPick" style="width:auto">
+            <option value="">Auto-cycle example flows</option>
+            ${ANIM_FLOWS.map(k => `<option value="${k}">${esc(D.ops[k].title)}</option>`).join('')}
+          </select>
+          <span class="flow-caption" id="flowCaption">Click "Play example flows" to see which service hits which, live.</span>
+        </div>
+        <div class="flow-map" id="flowMap">
           ${col('Clients', ['web', 'app', 'admin', 'partner'])}
           ${col('Edge', ['cdn', 'gw'])}
           <div class="flow-col"><h6>Commerce domain</h6>
             ${['catalog', 'cart', 'pricing', 'order', 'inventory', 'logistics'].map(id => `
-              <div class="flow-node core"><b>${esc(D.hosts[id].name)}</b></div>`).join('')}</div>
+              <div class="flow-node core" id="node-${id}"><b>${esc(D.hosts[id].name)}</b></div>`).join('')}</div>
           <div class="flow-col"><h6>Services domain</h6>
-            ${['booking', 'allocation'].map(id => `<div class="flow-node core"
+            ${['booking', 'allocation'].map(id => `<div class="flow-node core" id="node-${id}"
               style="background:linear-gradient(135deg,#0a8d82,#0FB5A6)"><b>${esc(D.hosts[id].name)}</b></div>`).join('')}
             <h6 class="mt-3">Shared</h6>
             ${['identity', 'search', 'payment', 'notify', 'media', 'analytics'].map(id => `
-              <div class="flow-node"><b>${esc(D.hosts[id].name)}</b></div>`).join('')}</div>
-          ${col('Data & providers', ['pg', 'redis', 'es', 'kafka', 's3', 'razorpay', 'delhivery', 'fcm', 'msg91'], 'ext')}
+              <div class="flow-node" id="node-${id}"><b>${esc(D.hosts[id].name)}</b></div>`).join('')}</div>
+          ${col('Data & providers', ['pg', 'es', 'kafka', 's3', 'razorpay', 'delhivery', 'sendgrid'], 'ext')}
+          <div class="flow-pulse" id="flowPulse"></div>
         </div>
         <hr class="divider">
         <div class="grid grid-3">
@@ -76,6 +88,73 @@
              ['Why one cart', 'A cart line is polymorphic: { kind: "product" | "service" }. That single decision is what makes "Buy AC + Installation" possible without a second checkout.']]
             .map(([t, d]) => `<div class="tile"><b class="small">${t}</b><p class="tiny muted mt-2">${d}</p></div>`).join('')}</div>
       </div></section>`;
+  }
+
+  /** Animates a moving dot hopping node-to-node through one or more D.ops traces, on the
+      architecture diagram, so a viewer can see live which service calls which. */
+  function initFlowAnimation() {
+    const map = $('#flowMap'), pulse = $('#flowPulse'), caption = $('#flowCaption');
+    const playBtn = $('#flowPlay'), pick = $('#flowPick');
+    if (!map || !pulse) return;
+    let playing = false, timer = null, activeNode = null;
+
+    const nodeFor = hid => $('#node-' + hid, map) || (hid === 'pgro' ? $('#node-pg', map) : null);
+    const clearHit = () => { if (activeNode) activeNode.classList.remove('is-hit'); activeNode = null; };
+    const moveTo = (el) => {
+      const m = map.getBoundingClientRect(), r = el.getBoundingClientRect();
+      pulse.style.left = (r.left - m.left + r.width / 2) + 'px';
+      pulse.style.top = (r.top - m.top + r.height / 2) + 'px';
+      pulse.style.opacity = '1';
+    };
+
+    function playSteps(steps, i, onDone) {
+      if (!playing) return;
+      if (i >= steps.length) { clearHit(); return onDone(); }
+      const [hid, who, what] = steps[i];
+      const el = nodeFor(hid);
+      if (el) {
+        clearHit();
+        moveTo(el);
+        el.classList.add('is-hit');
+        activeNode = el;
+        caption.innerHTML = `<b>${esc(who)}</b> — ${esc(what)}`;
+      }
+      timer = setTimeout(() => playSteps(steps, i + 1, onDone), el ? 650 : 80);
+    }
+
+    function playFlow(key) {
+      if (!playing) return;
+      const op = D.ops[key];
+      caption.innerHTML = `<b>${esc(op.title)}</b> starting…`;
+      playSteps(op.steps, 0, () => {
+        if (!playing) return;
+        timer = setTimeout(() => playNext(), 900);
+      });
+    }
+
+    let cycleIdx = 0;
+    function playNext() {
+      if (!playing) return;
+      const chosen = pick.value || ANIM_FLOWS[cycleIdx++ % ANIM_FLOWS.length];
+      playFlow(chosen);
+    }
+
+    function stop() {
+      playing = false;
+      clearTimeout(timer);
+      clearHit();
+      pulse.style.opacity = '0';
+      playBtn.innerHTML = `${icon('zap', 14)} Play example flows`;
+      caption.textContent = 'Click "Play example flows" to see which service hits which, live.';
+    }
+
+    playBtn.onclick = () => {
+      if (playing) return stop();
+      playing = true;
+      playBtn.innerHTML = `${icon('close', 14)} Stop`;
+      playNext();
+    };
+    pick.onchange = () => { if (playing) { clearTimeout(timer); clearHit(); playFlow(pick.value || ANIM_FLOWS[0]); } };
   }
 
   function servicesSec() {
@@ -316,7 +395,7 @@ message Variant {
       <p class="lead">The three places this platform can lose money if modelled carelessly: stock, slots and price.</p>
       <div class="grid grid-3 mb-4">
         ${[['Stock', 'Reserve at checkout start with a 15-minute TTL, not at payment. Reservations are rows, deductions are ledger entries — the stock table is append-only so every movement is auditable (see Admin → Inventory → Stock history).'],
-           ['Slots', 'A slot hold is a Redis key with NX + 10-minute expiry, keyed by city, date and window. Capacity is a function of live professional supply, so the grid greys out honestly instead of overbooking.'],
+           ['Slots', 'A slot hold is a Postgres row (atomic UPDATE guard) with a 10-minute `expires_at`, keyed by city, date and window. Capacity is a function of live professional supply, so the grid greys out honestly instead of overbooking.'],
            ['Price', 'Only pricing-promo-service computes money, in integer paise. The client\'s totals are display-only and re-computed server-side at order creation — a tampered cart cannot change what is charged.']]
           .map(([t, d]) => `<div class="card card-pad"><b class="h5">${t}</b><p class="small muted mt-2">${d}</p></div>`).join('')}</div>
       <div class="card card-pad">
@@ -437,6 +516,7 @@ User 1─* Address, WalletTxn, Wishlist, Notification</div>
 
     $$('.op-head').forEach(h => h.onclick = () => h.parentNode.classList.toggle('open'));
     $$('.op-card')[0].classList.add('open');
+    initFlowAnimation();
 
     const links = $$('#docNav a');
     const spy = () => {

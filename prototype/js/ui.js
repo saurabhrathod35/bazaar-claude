@@ -418,7 +418,7 @@
   function protoBar(active) {
     const links = [['index.html', 'Customer Website'], ['mobile.html', 'Mobile App'],
                    ['admin.html', 'Admin Dashboard'], ['services.html', 'Service Marketplace'],
-                   ['dev.html', 'Dev / Architecture']];
+                   ['superadmin.html', 'Super Admin Portal'], ['dev.html', 'Dev / Architecture']];
     const bar = el('nav', { class: 'proto-bar' },
       `<span class="live"><span>Interactive Prototype</span></span>` +
       links.map(([h, l]) => `<a href="${h}" class="${h === active ? 'is-active' : ''}">${l}</a>`).join('') +

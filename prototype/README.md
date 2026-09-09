@@ -181,11 +181,11 @@ POST  /v1/cart/items                              212 ms   200 OK
   ├ catalog    catalog.svc…  (gRPC)     GetVariant → price, MRP, status       18 ms
   ├ inventory  inventory.svc… (gRPC)    CheckAvailability(sku, qty)           15 ms
   ├ pricing    pricing.svc…             Recalculate totals, auto-apply offers 21 ms
-  ├ redis      redis-cluster:6379       SET cart:{cartId} EX 30d               3 ms
-  └ kafka      kafka:9092               emit cart.item_added                   4 ms
+  ├ pg         pg-primary:5432          UPSERT cart row, expires_at + 30d      6 ms
+  └ queue      pg-primary:5432 (queue)  emit cart.item_added                   4 ms
   Request  { "kind": "product", "variantId": "p6-white-15ton", "qty": 1 }
   Response { "cartId": "crt_91f2", "subtotal": 42999, "suggestedServices": ["pk-ac-install"] }
-  Events   kafka → cart.item_added   analytics → add_to_cart
+  Events   queue → cart.item_added   analytics → add_to_cart
 ```
 
 Each trace shows method and path, the owning service, auth and cache policy, the target SLO,
@@ -203,13 +203,13 @@ webhook, campaign send, OTP login, admin module loads and analytics queries.
 
 The written half, for the developer who has to build it:
 
-* **Architecture** — 4 clients → CDN/WAF → API gateway → 14 services → Postgres/Redis/OpenSearch/Kafka → external providers, with the reasoning behind database-per-service, the event bus, and the single polymorphic cart.
+* **Architecture** — 4 clients → CDN/WAF → API gateway → 14 services → Postgres (data + phase-1 event queue)/OpenSearch → external providers, with the reasoning behind database-per-service, the event bus, and the single polymorphic cart.
 * **Service catalogue** — what each service owns, its stack, its datastore, pod count and the one design note that matters (slot locks, stock ledger, saga compensation…).
 * **Request flows** — the same 13 core operations as expandable waterfalls with payloads and events.
 * **Tech stack** — every layer with the *why*, not just the *what*.
 * **Go microservices** — repo layout, service anatomy (thin chi handler → testable service layer → sqlc repo), a real `POST /v1/cart/items` handler with its parallel `errgroup` fan-out, and the ten patterns every service follows: transactional outbox, saga compensation, context deadlines, circuit breakers, testcontainers.
 * **React & React Native** — the four apps, the four shared packages, and one `useAddToCart` hook consumed by both web React and React Native.
-* **Service comms** — REST at the edge, gRPC between services, Kafka for async, plus the protobuf contract and the buf breaking-change gate.
+* **Service comms** — REST at the edge, gRPC between services, a Postgres queue table for async (RabbitMQ phase 2+), plus the protobuf contract and the buf breaking-change gate.
 * **Data & integrity** — stock reservations, slot holds, server-side pricing, core entity map.
 * **API conventions & error contract** — auth, idempotency, tracing, pagination, money as integer paise, stable error codes and what the client should do with each.
 * **Environments** — Local → Dev → QA/Staging → UAT → Production, with data policy, deploy trigger and promotion gate per environment.
@@ -276,9 +276,9 @@ polymorphic `{ kind: 'product' | 'service' }`, exactly as `UI.Store` does here.
 | Admin console | React 19 + Vite SPA, TanStack Query/Table, React Hook Form |
 | Customer app | React Native 0.76 + TypeScript |
 | Partner app (professionals) | React Native, offline-tolerant write queue |
-| Backend | 14 Go 1.23 microservices — chi, sqlc/pgx, go-redis, kafka-go, grpc-go |
+| Backend | 14 Go 1.23 microservices — chi, sqlc/pgx, grpc-go |
 | Contracts | REST + JSON through Kong for clients; gRPC + protobuf between services |
-| Data | PostgreSQL 16 (database per service), Redis 7 (carts, slot locks, geo), OpenSearch, Kafka, ClickHouse, S3 |
+| Data | PostgreSQL 16 + postgis (database per service — carts, slot locks, geo all TTL rows; phase-1 event queue table too), OpenSearch, ClickHouse, S3 — RabbitMQ phase 2+ |
 | Infra | AWS ap-south-1, EKS, Terraform, Helm, ArgoCD, OpenTelemetry |
 
 Monorepo: `services/*` (one Go module and image each), `proto/` (buf-linted contracts),

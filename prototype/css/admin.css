@@ -69,9 +69,9 @@ body.admin{background:var(--surface-sunken)}
 
 /* ---------- FORM TABS (product editor) ---------- */
 .form-tabs{display:flex; gap:2px; background:var(--surface-sunken); padding:4px; border-radius:var(--r-sm); overflow-x:auto}
-.form-tabs button{padding:8px var(--s-4); border-radius:var(--r-xs); font-size:var(--fs-md); font-weight:650;
-  color:var(--text-muted); white-space:nowrap}
-.form-tabs button.is-active{background:var(--surface); color:var(--primary); box-shadow:var(--sh-xs)}
+.form-tabs button,.form-tabs a{padding:8px var(--s-4); border-radius:var(--r-xs); font-size:var(--fs-md); font-weight:650;
+  color:var(--text-muted); white-space:nowrap; text-decoration:none; display:inline-block}
+.form-tabs button.is-active,.form-tabs a.is-active{background:var(--surface); color:var(--primary); box-shadow:var(--sh-xs)}
 .form-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:var(--s-4)}
 .form-grid .full{grid-column:1/-1}
 .dropzone{border:1.5px dashed var(--border-strong); border-radius:var(--r-md); padding:var(--s-7); text-align:center;

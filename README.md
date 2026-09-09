@@ -15,6 +15,7 @@ architected from day one to also run a home-services marketplace.
 | 🧰 | [Service marketplace](https://saurabhrathod35.github.io/bazaar-claude/prototype/services.html) | Categories, packages, 5-step booking wizard, tracking, professionals |
 | 📊 | [Admin dashboard](https://saurabhrathod35.github.io/bazaar-claude/prototype/admin.html) | 37 screens — catalog, variants, inventory, marketing, services, logistics, analytics, roles |
 | 📱 | [Mobile app](https://saurabhrathod35.github.io/bazaar-claude/prototype/mobile.html) | 22 screens in a 390×844 device frame |
+| 🛡️ | [Super Admin Portal](https://saurabhrathod35.github.io/bazaar-claude/prototype/superadmin.html) | Cross-tenant: tenant list, onboarding, feature flags, incident troubleshooting, audit log — for the backend on-call team, not tenant staff |
 | 🧑‍💻 | [Dev Mode / architecture](https://saurabhrathod35.github.io/bazaar-claude/prototype/dev.html) | Go microservices, React & React Native, request flows, environments, release process |
 
 ## Highlights
@@ -31,7 +32,7 @@ architected from day one to also run a home-services marketplace.
 ## Target production stack
 
 React 19 (web + admin) · React Native (customer + partner apps) · **Go 1.23 microservices**
-(14 services, database-per-service, gRPC internally, Kafka event bus, Postgres/Redis/OpenSearch).
+(14 services, database-per-service, gRPC internally, Postgres-queue event bus (phase 1) / RabbitMQ (phase 2+), Postgres/OpenSearch).
 Full specification in [`prototype/dev.html`](https://saurabhrathod35.github.io/bazaar-claude/prototype/dev.html).
 
 ## Run locally
