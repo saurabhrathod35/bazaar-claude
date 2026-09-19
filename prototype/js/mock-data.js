@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — mock-data.js
+   KEENPLAZA — mock-data.js
    Single source of demo data for storefront, services, admin, mobile.
    Everything here is fake. No real credentials, no real APIs.
    ============================================================ */
@@ -143,7 +143,7 @@
       colors:['Default'], sizes:['One Size'], tags:['flash','recommended'],
       desc:'Complete everyday makeup kit — lipstick, kajal, compact and highlighter in one gifting box.',
       specs:{ 'Items':'4', 'Shelf Life':'24 months', 'Skin Type':'All' },
-      seller:'Beauty Bazaar', emoji:'💄' },
+      seller:'Beauty KeenPlaza', emoji:'💄' },
     { id:'p6', name:'LG 1.5 Ton 5 Star Split Inverter AC', brand:'LG', cat:'c-ac', catName:'Air Conditioners',
       price:42999, mrp:56990, rating:4.6, reviews:892, skuBase:'LG-AC15', weight:'38 kg', dims:'99×33×21 cm',
       colors:['White'], sizes:['1.0 Ton','1.5 Ton','2.0 Ton'], tags:['trending'], installService:'sv-ac',
@@ -606,7 +606,7 @@
   })();
 
   const business = {
-    name:'Bazaar Commerce Pvt Ltd', brand:'Bazaar', gstin:'27AABCB1234C1ZV', support:'help@bazaar.example.in',
+    name:'KeenPlaza Commerce Pvt Ltd', brand:'KeenPlaza', gstin:'27AABCB1234C1ZV', support:'help@keenplaza.example.in',
     phone:'+91 22 4000 1200', currency:'INR (₹)', timezone:'Asia/Kolkata (GMT+5:30)',
     address:'Level 8, Commerce House, Andheri East, Mumbai 400069', cities:['Mumbai','Delhi NCR','Bengaluru','Pune','Ahmedabad','Surat','Hyderabad','Kochi','Jaipur']
   };
@@ -659,7 +659,7 @@
   const savedPayments = [
     { id:'pm1', type:'UPI', label:'aarav@okhdfcbank', meta:'Default UPI', icon:'🟣' },
     { id:'pm2', type:'Credit Card', label:'HDFC •••• 4821', meta:'Expires 08/29', icon:'💳' },
-    { id:'pm3', type:'Wallet', label:'Bazaar Wallet', meta:'Balance ₹1,250', icon:'👛' }
+    { id:'pm3', type:'Wallet', label:'KeenPlaza Wallet', meta:'Balance ₹1,250', icon:'👛' }
   ];
 
   const supportTickets = [
@@ -705,7 +705,7 @@
               { id:'myn-dress', path:'Women > Western Wear > Dresses' },
               { id:'myn-watch', path:'Accessories > Watches' }]
   };
-  // bazaar category id → { marketplace: marketplaceCategoryId | null }. null/absent = unmapped.
+  // keenplaza category id → { marketplace: marketplaceCategoryId | null }. null/absent = unmapped.
   const categoryMappings = {
     'c-ac':          { amazon:'amz-ac', meesho:'msh-ac', shopify:'shp-ac', myntra:null },
     'c-men-shoes':   { amazon:'amz-shoes', meesho:null, shopify:'shp-shoes', myntra:'myn-shoes' },
@@ -745,7 +745,7 @@
 
   /* ---------- super admin portal (platform ops / on-call) ---------- */
   const platformTenants = [
-    { id:'t-bazaar', name:'Bazaar Flagship', slug:'bazaar', plan:'Enterprise', status:'active', mrr:842000, createdAt:'2025-11-02T00:00:00+05:30', errorRate:0.4, p95:210, health:'healthy' },
+    { id:'t-keenplaza', name:'KeenPlaza Flagship', slug:'keenplaza', plan:'Enterprise', status:'active', mrr:842000, createdAt:'2025-11-02T00:00:00+05:30', errorRate:0.4, p95:210, health:'healthy' },
     { id:'t-urbanfix', name:'UrbanFix Services', slug:'urbanfix', plan:'Growth', status:'active', mrr:186000, createdAt:'2026-02-14T00:00:00+05:30', errorRate:2.1, p95:340, health:'degraded' },
     { id:'t-rentkart', name:'RentKart', slug:'rentkart', plan:'Growth', status:'active', mrr:94000, createdAt:'2026-05-30T00:00:00+05:30', errorRate:0.2, p95:180, health:'healthy' },
     { id:'t-quickmart', name:'QuickMart Local', slug:'quickmart', plan:'Starter', status:'onboarding', mrr:0, createdAt:'2026-09-06T00:00:00+05:30', errorRate:0, p95:0, health:'pending' },
@@ -754,16 +754,16 @@
   const platformFeatureFlags = [
     { id:'ff1', tenantId:null, key:'rental_vertical', enabled:false, rolloutPct:0, desc:'Enables the rental cart line kind + booking date-range slots' },
     { id:'ff2', tenantId:null, key:'marketplace_listings', enabled:true, rolloutPct:100, desc:'Amazon/Meesho/Shopify/Myntra category mapping + bulk listing' },
-    { id:'ff3', tenantId:'t-bazaar', key:'whatsapp_notifications', enabled:true, rolloutPct:100, desc:'WhatsApp channel in the notification trigger matrix' },
+    { id:'ff3', tenantId:'t-keenplaza', key:'whatsapp_notifications', enabled:true, rolloutPct:100, desc:'WhatsApp channel in the notification trigger matrix' },
     { id:'ff4', tenantId:'t-urbanfix', key:'allocation_v2_scoring', enabled:true, rolloutPct:50, desc:'New professional-scoring weights (rating 40/distance 25/load 20/accept 15)' },
     { id:'ff5', tenantId:'t-rentkart', key:'rental_vertical', enabled:true, rolloutPct:100, desc:'Overrides the platform default — RentKart is the rental vertical design partner' }
   ];
   const platformAuditLog = [
-    { id:'al1', actor:'priya@bazaar.internal', tenantId:'t-rentkart', action:'feature_flag.enabled', target:'rental_vertical', oldValue:'false', newValue:'true', when:'2026-09-07T10:15:00+05:30' },
-    { id:'al2', actor:'rahul@bazaar.internal', tenantId:'t-fixmyhome', action:'tenant.suspended', target:'t-fixmyhome', oldValue:'active', newValue:'suspended', when:'2026-09-06T18:40:00+05:30', note:'Sustained 9.8% error rate, payment webhook signature failures' },
-    { id:'al3', actor:'priya@bazaar.internal', tenantId:'t-quickmart', action:'tenant.onboarded', target:'t-quickmart', oldValue:null, newValue:'onboarding', when:'2026-09-06T09:00:00+05:30' },
-    { id:'al4', actor:'arjun@bazaar.internal', tenantId:'t-urbanfix', action:'feature_flag.rollout_changed', target:'allocation_v2_scoring', oldValue:'25%', newValue:'50%', when:'2026-09-05T14:22:00+05:30' },
-    { id:'al5', actor:'priya@bazaar.internal', tenantId:'t-bazaar', action:'webhook.replayed', target:'payment_evt_88213', oldValue:null, newValue:null, when:'2026-09-04T11:05:00+05:30', note:'Razorpay webhook lost to a deploy race — replayed from provider event log' }
+    { id:'al1', actor:'priya@keenplaza.internal', tenantId:'t-rentkart', action:'feature_flag.enabled', target:'rental_vertical', oldValue:'false', newValue:'true', when:'2026-09-07T10:15:00+05:30' },
+    { id:'al2', actor:'rahul@keenplaza.internal', tenantId:'t-fixmyhome', action:'tenant.suspended', target:'t-fixmyhome', oldValue:'active', newValue:'suspended', when:'2026-09-06T18:40:00+05:30', note:'Sustained 9.8% error rate, payment webhook signature failures' },
+    { id:'al3', actor:'priya@keenplaza.internal', tenantId:'t-quickmart', action:'tenant.onboarded', target:'t-quickmart', oldValue:null, newValue:'onboarding', when:'2026-09-06T09:00:00+05:30' },
+    { id:'al4', actor:'arjun@keenplaza.internal', tenantId:'t-urbanfix', action:'feature_flag.rollout_changed', target:'allocation_v2_scoring', oldValue:'25%', newValue:'50%', when:'2026-09-05T14:22:00+05:30' },
+    { id:'al5', actor:'priya@keenplaza.internal', tenantId:'t-keenplaza', action:'webhook.replayed', target:'payment_evt_88213', oldValue:null, newValue:null, when:'2026-09-04T11:05:00+05:30', note:'Razorpay webhook lost to a deploy race — replayed from provider event log' }
   ];
   // canned troubleshoot lookups keyed by what an on-call engineer might paste in
   const troubleshootLookups = {
@@ -776,8 +776,8 @@
         ['booking-service', 'Slot hold released', '10:02:10'],
         ['order-service', 'Order → FAILED, customer notified', '10:02:11']
       ],
-      suggestion:'Matches "Checkout stuck mid-saga" in local-debugging.md — check payment provider status page; this is a provider timeout, not a Bazaar defect.' },
-    'BZ100241': { tenantId:'t-bazaar', traceId:'trc_51a0', correlationId:'corr_2b71', summary:'Order stuck OUT_FOR_DELIVERY, courier webhook never arrived',
+      suggestion:'Matches "Checkout stuck mid-saga" in local-debugging.md — check payment provider status page; this is a provider timeout, not a KeenPlaza defect.' },
+    'BZ100241': { tenantId:'t-keenplaza', traceId:'trc_51a0', correlationId:'corr_2b71', summary:'Order stuck OUT_FOR_DELIVERY, courier webhook never arrived',
       timeline:[
         ['logistics-service', 'Shipment created, AWB assigned', '2026-09-03 09:10'],
         ['delhivery', 'Courier webhook: picked up', '2026-09-03 11:00'],

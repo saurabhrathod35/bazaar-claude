@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — app.js
+   KEENPLAZA — app.js
    Customer storefront SPA: home, listing, PDP, cart, checkout,
    auth, account, orders. Hash routing, no framework.
    ============================================================ */
@@ -54,8 +54,8 @@
     </div>
     <div class="container header-main">
       <button class="icon-btn hide-lg" id="mNav">${icon('menu')}</button>
-      <a href="#/home" class="logo"><span class="mark">B</span>
-        <span>Bazaar<small>Commerce + Services</small></span></a>
+      <a href="#/home" class="logo"><span class="mark">${icon('logo', 20)}</span>
+        <span>KeenPlaza<small>Commerce + Services</small></span></a>
       <button class="loc-btn hide-md" id="locBtn">${icon('pin', 18)}
         <span class="col"><span class="l1">Deliver to</span><span class="l2" id="locLabel">Mumbai 400060</span></span>
         ${icon('chevronDown', 14)}</button>
@@ -93,7 +93,7 @@
     return `<div class="container">
       <div class="foot-grid">
         <div>
-          <a href="#/home" class="logo" style="color:#fff"><span class="mark">B</span><span>Bazaar</span></a>
+          <a href="#/home" class="logo" style="color:#fff"><span class="mark">${icon('logo', 20)}</span><span>KeenPlaza</span></a>
           <p class="small mt-3" style="max-width:34ch">One platform for everything you want to buy, book, install, repair and maintain.</p>
           <div class="row gap-2 mt-4">${['🇮🇳 Made for India', '⚡ Same-day services', '🔒 Secure payments']
             .map(t => `<span class="tag" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.75)">${t}</span>`).join('')}</div>
@@ -101,10 +101,10 @@
         ${col('Shop', [['Fashion', '#/plp/c-fashion'], ['Electronics', '#/plp/c-electronics'], ['Appliances', '#/plp/c-appliances'], ['Beauty', '#/plp/c-beauty'], ['Offers', '#/offers']])}
         ${col('Services', [['AC Service', '#/services'], ['Home Cleaning', '#/services'], ['Salon at Home', '#/services'], ['Electrician', '#/services'], ['All services', '#/services']])}
         ${col('Account', [['My Orders', '#/account/orders'], ['Wishlist', '#/account/wishlist'], ['Bookings', '#/account/bookings'], ['Wallet', '#/account/wallet'], ['Support', '#/account/support']])}
-        ${col('Company', [['About Bazaar'], ['Careers'], ['Sell on Bazaar'], ['Partner as a Pro'], ['Press']])}
+        ${col('Company', [['About KeenPlaza'], ['Careers'], ['Sell on KeenPlaza'], ['Partner as a Pro'], ['Press']])}
       </div>
       <div class="foot-bottom">
-        <span>© 2026 Bazaar Commerce Pvt Ltd · Prototype for client demo — data is fictional.</span>
+        <span>© 2026 KeenPlaza Commerce Pvt Ltd · Prototype for client demo — data is fictional.</span>
         <span class="row gap-4"><a href="#/home">Privacy</a><a href="#/home">Terms</a><a href="admin.html">Admin</a></span>
       </div></div>`;
   }
@@ -158,7 +158,7 @@
     $('#notifBtn').onclick = openNotifications;
     $('#accBtn').onclick = openAccountMenu;
     $('#mNav').onclick = () => drawer({
-      title: 'Browse Bazaar', side: 'left',
+      title: 'Browse KeenPlaza', side: 'left',
       body: `<div class="col gap-1">
         ${M.categories.map(c => `<a class="row gap-3" style="padding:10px 0" href="#/plp/${c.id}">
           <span style="font-size:20px">${c.icon || '🛍️'}</span><b>${esc(c.name)}</b></a>`).join('')}
@@ -214,7 +214,7 @@
     drawer({ title: 'My Account',
       body: `<div class="row gap-3 mb-4"><div class="avatar avatar-lg">${U.initials(u.name)}</div>
         <div class="col"><b class="h5">${esc(u.name)}</b><span class="small muted">${esc(u.phone)}</span>
-        <span class="badge badge-primary mt-2">Bazaar Plus member</span></div></div>
+        <span class="badge badge-primary mt-2">KeenPlaza Plus member</span></div></div>
         <div class="col">${[['orders', 'Orders', 'box'], ['bookings', 'Service Bookings', 'tools'], ['wishlist', 'Wishlist', 'heart'],
           ['addresses', 'Saved Addresses', 'pin'], ['coupons', 'Coupons', 'tag'], ['wallet', 'Wallet', 'wallet'],
           ['payments', 'Saved Payments', 'wallet'], ['notifications', 'Notifications', 'bell'],
@@ -357,7 +357,7 @@
 
     <section class="section"><div class="container"><div class="svc-band">
       <div class="section-head"><div>
-        <span class="eyebrow" style="color:var(--secondary-600)">Bazaar Services</span>
+        <span class="eyebrow" style="color:var(--secondary-600)">KeenPlaza Services</span>
         <h3 class="h3 mt-2">Need help at home?<br>Book trusted professionals.</h3>
         <p class="muted mt-2">Background-verified experts, upfront pricing, 30-day service warranty.</p></div>
         <a href="#/services" class="btn btn-primary">Explore all services</a></div>
@@ -1049,7 +1049,7 @@
     }
     if (checkout.step === 4) {
       const methods = [['upi', 'UPI', '🟣', 'GPay, PhonePe, Paytm, BHIM'], ['card', 'Credit / Debit Card', '💳', 'Visa, Mastercard, RuPay, Amex'],
-        ['nb', 'Net Banking', '🏦', 'All major Indian banks'], ['wallet', 'Wallet', '👛', 'Bazaar Wallet · ₹1,250 balance'],
+        ['nb', 'Net Banking', '🏦', 'All major Indian banks'], ['wallet', 'Wallet', '👛', 'KeenPlaza Wallet · ₹1,250 balance'],
         ['cod', 'Cash on Delivery', '💵', t.hasService ? 'Not available with service bookings' : 'Pay when it arrives']];
       return `<h4 class="h4 mb-4">Payment method</h4>
         <div class="col gap-3">${methods.map(([k, l, e, d]) => {
@@ -1104,7 +1104,7 @@
           <label class="check"><input type="checkbox" checked> Save this card securely</label></div>`,
         nb: `<div class="tile"><div class="field"><label class="label">Choose bank</label>
           <select class="select">${['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak Mahindra'].map(b => `<option>${b}</option>`).join('')}</select></div></div>`,
-        wallet: `<div class="tile row-between"><span class="col"><b class="small">Bazaar Wallet</b>
+        wallet: `<div class="tile row-between"><span class="col"><b class="small">KeenPlaza Wallet</b>
           <span class="tiny muted">Balance ₹1,250 · remainder charged to UPI</span></span>
           <button class="btn btn-outline btn-sm">Add money</button></div>`,
         cod: `<div class="tile"><p class="small muted">Pay ${inr(Store.totals().total)} in cash or UPI when the order arrives. A ₹0 handling fee applies.</p></div>`
@@ -1272,7 +1272,7 @@
     if (tab === 'wallet') {
       const tx = [['Refund — BZ100233', '+1,199', daysBack(11)], ['Cashback — Weekend Sale', '+250', daysBack(20)],
         ['Used on BZ100238', '-199', daysBack(2)], ['Referral bonus', '+100', daysBack(40)]];
-      return `<h4 class="h4 mb-4">Bazaar Wallet</h4>
+      return `<h4 class="h4 mb-4">KeenPlaza Wallet</h4>
         <div class="card card-pad row-between" style="background:linear-gradient(120deg,var(--primary-900),var(--primary));color:#fff">
           <div class="col"><span class="small" style="opacity:.7">Available balance</span>
             <b style="font-size:34px">₹1,250</b><span class="tiny" style="opacity:.7">Usable on products and services</span></div>
@@ -1479,7 +1479,7 @@
         <select class="select"><option>Damaged on arrival</option><option>Wrong item delivered</option>
           <option>Size / fit issue</option><option>No longer needed</option></select></div>
         <div class="field"><label class="label">Preferred resolution</label>
-          <select class="select"><option>Refund to source</option><option>Replace with same item</option><option>Bazaar Wallet credit</option></select></div>
+          <select class="select"><option>Refund to source</option><option>Replace with same item</option><option>KeenPlaza Wallet credit</option></select></div>
         <div class="field"><label class="label">Comments</label><textarea class="textarea"></textarea></div></div>`,
       foot: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" id="rOk">Raise request</button>`,
       onOpen(r) { $('#rOk', r).onclick = () => { closeModal(); toast('Return requested — pickup in 2 days'); }; } }));
@@ -1571,7 +1571,7 @@
 
   /* ============ AUTH ============ */
   const authArt = `<div class="auth-art">
-    <a href="#/home" class="logo" style="color:#fff"><span class="mark">B</span><span>Bazaar</span></a>
+    <a href="#/home" class="logo" style="color:#fff"><span class="mark">${icon('logo', 20)}</span><span>KeenPlaza</span></a>
     <h2 class="h2" style="max-width:20ch">One account for everything you buy and book.</h2>
     ${[['🛍️', 'Shop 12,000+ products', 'Fashion, electronics, home and appliances'],
        ['🧰', 'Book verified professionals', 'AC service, cleaning, salon, repairs'],
@@ -1582,7 +1582,7 @@
 
   route('login', (a, q) => `<div class="auth-wrap">${authArt}
     <div class="auth-form"><div class="inner">
-      <h3 class="h3">Login to Bazaar</h3>
+      <h3 class="h3">Login to KeenPlaza</h3>
       <p class="muted small mt-2">Use your mobile number or email.</p>
       <div class="seg mt-5" id="loginMode"><button class="is-active" data-m="otp">Mobile + OTP</button>
         <button data-m="pw">Email + Password</button></div>
@@ -1591,7 +1591,7 @@
         <span class="tiny soft">OR</span><hr class="grow" style="border:none;border-top:1px solid var(--border)"></div>
       <div class="social mt-4">
         <button>🔵 Google</button><button>⚫ Apple</button><button>🔷 Facebook</button></div>
-      <p class="small muted center mt-6">New to Bazaar? <a href="#/register" style="color:var(--primary);font-weight:700">Create an account</a></p>
+      <p class="small muted center mt-6">New to KeenPlaza? <a href="#/register" style="color:var(--primary);font-weight:700">Create an account</a></p>
       <p class="tiny soft center mt-4">Demo login — any value works.</p>
     </div></div></div>`);
   afterRender.login = (a, q) => {

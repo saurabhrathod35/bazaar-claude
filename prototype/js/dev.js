@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — dev.js
+   KEENPLAZA — dev.js
    Renders the engineering spec page (dev.html) from dev-data.js:
    architecture, service catalogue, request flows, stack,
    environments, release/promotion process, conventions, roadmap.
@@ -369,7 +369,7 @@ export function useAddToCart() {
       ], D.commsRules)}</div></div>
       <div class="card card-pad mt-4">
         <b class="h5">Protobuf contract — the internal API</b>
-        <div class="code-block mt-3">${esc(`// proto/bazaar/catalog/v1/catalog.proto
+        <div class="code-block mt-3">${esc(`// proto/keenplaza/catalog/v1/catalog.proto
 service CatalogService {
   rpc GetVariant(GetVariantRequest) returns (Variant);
   rpc ListVariants(ListVariantsRequest) returns (ListVariantsResponse);

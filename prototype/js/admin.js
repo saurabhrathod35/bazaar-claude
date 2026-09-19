@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — admin.js  (part 1 of 2)
+   KEENPLAZA — admin.js  (part 1 of 2)
    Shell, sidebar routing, dashboard, orders and catalog modules.
    Part 2 (admin-modules.js) registers marketing, customers,
    services, logistics, analytics and settings views into ADMIN.views.
@@ -60,7 +60,7 @@
   }
   function crumbFor(key) {
     const g = NAV.find(g => g.items.some(i => i[0] === key));
-    return (g && g.group ? g.group + ' / ' : 'Bazaar Admin / ') + (TITLES[key] || '');
+    return (g && g.group ? g.group + ' / ' : 'KeenPlaza Admin / ') + (TITLES[key] || '');
   }
 
   /* ---------- shared page helpers ---------- */
@@ -451,7 +451,7 @@
           <select class="select">${M.servicePackages.filter(s => s.bundleFor).map(s => `<option>${esc(s.name)} — ${inr(s.price)}</option>`).join('')}</select>
           <span class="hint">This powers product + service cross-selling.</span></div></div>`;
       if (t === 'SEO') return `<div class="form-grid">
-        <div class="field full"><label class="label">Page title</label><input class="input" value="${p ? esc(p.name) + ' — Buy Online | Bazaar' : ''}"></div>
+        <div class="field full"><label class="label">Page title</label><input class="input" value="${p ? esc(p.name) + ' — Buy Online | KeenPlaza' : ''}"></div>
         <div class="field full"><label class="label">Meta description</label><textarea class="textarea">${p ? esc(p.desc) : ''}</textarea></div>
         <div class="field"><label class="label">URL slug</label><input class="input" value="${p ? p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : ''}"></div>
         <div class="field"><label class="label">Canonical</label><input class="input" placeholder="Leave blank for default"></div>
@@ -577,13 +577,13 @@
         ], M.importJobs)}</div></div>`;
 
     // Category Mapping tab
-    return `${pageHead('Marketplace Listings', 'Map Bazaar categories to each marketplace\'s own taxonomy — a product can only be listed on a marketplace once its category is mapped',
+    return `${pageHead('Marketplace Listings', 'Map KeenPlaza categories to each marketplace\'s own taxonomy — a product can only be listed on a marketplace once its category is mapped',
         `<button class="btn btn-outline btn-sm" onclick="location.hash='#/mkt-listings/bulk'">${icon('box', 14)} Go to bulk listing</button>`)}
       ${tabs}
       <div class="pane"><div class="pane-head"><b>Category → marketplace mapping</b>
         <span class="tiny muted">${Object.keys(M.categoryMappings).length} categories</span></div>
         <div class="pane-body tight">${table([
-          { key: 'cat', label: 'Bazaar category', render: catId => `<b class="small">${esc((M.flatCategories.find(c => c.id === catId) || {}).name || catId)}</b>` },
+          { key: 'cat', label: 'KeenPlaza category', render: catId => `<b class="small">${esc((M.flatCategories.find(c => c.id === catId) || {}).name || catId)}</b>` },
           ...M.marketplaces.map(mkt => ({
             key: mkt.id, label: mkt.name, align: 'center',
             render: catId => {
@@ -864,8 +864,8 @@
      SHELL BOOT
      ============================================================ */
   function sidebarHTML() {
-    return `<div class="sb-head"><span class="mark">B</span>
-        <span><b>Bazaar</b><small>Admin Console</small></span></div>
+    return `<div class="sb-head"><span class="mark">${icon('logo', 18)}</span>
+        <span><b>KeenPlaza</b><small>Admin Console</small></span></div>
       <div class="sb-scroll">${NAV.map(g => `
         ${g.group ? `<div class="sb-group">${g.group}</div>` : ''}
         ${g.items.map(([k, l, ic, n]) => `<button class="sb-link" data-k="${k}">${icon(ic, 17)} ${l}

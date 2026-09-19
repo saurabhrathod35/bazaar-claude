@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — ui.js
+   KEENPLAZA — ui.js
    Shared kit for every screen: formatting, placeholder art, icons,
    toast / modal / drawer, charts, and the persisted "super cart" store.
    Loaded by index.html, services.html, admin.html, mobile.html.
@@ -67,6 +67,7 @@
 
   /* ---------- icons (inline SVG, 24px grid) ---------- */
   const ICONS = {
+    logo:'<path d="M5 11.6h38"/><path d="M8 16h32v23H8Z"/><path d="M13 39v-8.5a3 3 0 0 1 6 0V39M29 39v-8.5a3 3 0 0 1 6 0V39"/><path d="M21.5 39V30a2.5 2.5 0 0 1 5 0v9Z" fill="var(--accent)" stroke="none"/>',
     search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
     cart:'<path d="M3 4h2l2.4 11.2a2 2 0 002 1.6h7.9a2 2 0 002-1.6L21 8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/>',
     heart:'<path d="M12 20s-7-4.4-7-9.2A3.9 3.9 0 0112 8a3.9 3.9 0 017 2.8C19 15.6 12 20 12 20z"/>',
@@ -110,8 +111,10 @@
     rotate:'<path d="M3 12a9 9 0 109-9v4"/><path d="M12 3L8 7l4 4"/>'
   };
   function icon(name, size = 20, cls = '') {
-    return `<svg class="ic ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
+    // the brand mark is drawn on a 48 grid; every other icon on 24
+    const box = name === 'logo' ? 48 : 24;
+    return `<svg class="ic ${cls}" width="${size}" height="${size}" viewBox="0 0 ${box} ${box}" fill="none"
+      stroke="currentColor" stroke-width="${name === 'logo' ? 2.6 : 1.7}" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
   }
 
   /* ---------- badges ---------- */
@@ -120,7 +123,7 @@
   const stars = r => `<span class="rating"><span class="star">★</span>${r}</span>`;
 
   /* ---------- persisted store (the "super cart") ---------- */
-  const KEY = 'bazaar.proto.v1';
+  const KEY = 'keenplaza.proto.v1';
   const defaults = {
     cart: [], wishlist: [], user: null, city: 'Mumbai', pin: '400060',
     recentlyViewed: [], coupon: null, orders: [], bookings: [], notifSeen: false

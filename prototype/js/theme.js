@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — theme.js
+   KEENPLAZA — theme.js
    Light / dark mode + live brand-colour customiser.
    Regenerates the whole token ramp (50→900) from three brand
    colours, writes them as CSS custom properties on :root, and
@@ -9,8 +9,8 @@
 (function (global) {
   'use strict';
 
-  const KEY = 'bazaar.theme.v1';
-  const DEFAULTS = { mode: 'light', primary: '#5B3DF5', secondary: '#0FB5A6', accent: '#FF7A2F', radius: 'default' };
+  const KEY = 'keenplaza.theme.v1';
+  const DEFAULTS = { mode: 'system', primary: '#5B3DF5', secondary: '#0FB5A6', accent: '#FF7A2F', radius: 'default' };
 
   const PRESETS = [
     { id: 'indigo',  name: 'Indigo',    primary: '#5B3DF5', secondary: '#0FB5A6', accent: '#FF7A2F' },
@@ -167,7 +167,7 @@
 
         <div class="tp-note">Tokens regenerate live — every screen, chart, badge and shadow
           follows these three colours. Tip: press <b>T</b> to flip dark mode.</div>
-        <button class="tp-reset" id="tpReset">Reset to Bazaar default</button>
+        <button class="tp-reset" id="tpReset">Reset to KeenPlaza default</button>
       </div>`;
 
     document.body.appendChild(btn);

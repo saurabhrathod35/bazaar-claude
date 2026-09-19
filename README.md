@@ -1,4 +1,4 @@
-# Bazaar — Commerce + Services Super App (Interactive Prototype)
+# KeenPlaza — Commerce + Services Super App (Interactive Prototype)
 
 **Live demo → https://saurabhrathod35.github.io/bazaar-claude/**
 
@@ -38,8 +38,8 @@ Full specification in [`prototype/dev.html`](https://saurabhrathod35.github.io/b
 ## Run locally
 
 ```bash
-git clone git@github.com:saurabhrathod35/bazaar-claude.git
-cd bazaar-claude/prototype
+git clone git@github.com:saurabhrathod35/keenplaza-claude.git
+cd keenplaza-claude/prototype
 python3 -m http.server 8080   # or just open index.html
 ```
 

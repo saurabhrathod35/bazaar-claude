@@ -1,4 +1,4 @@
-# Bazaar — Commerce + Services Super App (Interactive Prototype)
+# KeenPlaza — Commerce + Services Super App (Interactive Prototype)
 
 > **One platform for everything customers want to buy, book, install, repair, maintain and manage.**
 > Today: e-commerce. Tomorrow: e-commerce + services. Future: a unified commerce & services ecosystem.
@@ -175,8 +175,8 @@ production:
 POST  /v1/cart/items                              212 ms   200 OK
   Operation   Add product to cart
   Owning svc  cart          Auth  Bearer JWT      SLO  p95 < 220 ms
-  ├ web        www.bazaar.in            POST body: { kind, variantId, qty }
-  ├ gw         api.bazaar.in            Verify JWT · attach x-user-id          5 ms
+  ├ web        www.keenplaza.in            POST body: { kind, variantId, qty }
+  ├ gw         api.keenplaza.in            Verify JWT · attach x-user-id          5 ms
   ├ cart       cart.svc.cluster.local   Upsert line into cart aggregate       12 ms
   ├ catalog    catalog.svc…  (gRPC)     GetVariant → price, MRP, status       18 ms
   ├ inventory  inventory.svc… (gRPC)    CheckAvailability(sku, qty)           15 ms

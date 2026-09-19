@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — services.js
+   KEENPLAZA — services.js
    Service marketplace: discovery, packages, booking wizard,
    booking tracking, professional profiles. Shares the super cart.
    ============================================================ */
@@ -37,8 +37,8 @@
         <span class="row gap-4 hide-md"><a href="index.html">Shop products</a><a href="admin.html">Admin</a></span>
       </div></div>
       <div class="container header-main">
-        <a href="index.html" class="logo"><span class="mark">B</span>
-          <span>Bazaar<small>Services</small></span></a>
+        <a href="index.html" class="logo"><span class="mark">${icon('logo', 20)}</span>
+          <span>KeenPlaza<small>Services</small></span></a>
         <button class="loc-btn hide-md" id="locBtn">${icon('pin', 18)}
           <span class="col"><span class="l1">Service city</span><span class="l2" id="locLabel">Mumbai</span></span>
           ${icon('chevronDown', 14)}</button>
@@ -75,7 +75,7 @@
           <span class="em">${svcCatById(p.catId).icon}</span><span class="col"><b class="small">${esc(p.name)}</b>
           <span class="tiny muted">${inr(p.price)} · ${esc(p.duration)}</span></span></button>`).join('')
           : '<div class="table-empty small">No services matched</div>'}
-        ${prods.length ? '<div class="grp">Products on Bazaar</div>' + prods.map(p => `
+        ${prods.length ? '<div class="grp">Products on KeenPlaza</div>' + prods.map(p => `
           <button class="item" data-ext="index.html#/pdp/${p.id}"><span class="em">${p.emoji}</span>
           <span class="col"><b class="small">${esc(p.name)}</b><span class="tiny muted">${inr(p.price)}</span></span></button>`).join('') : ''}
       </div>`;
@@ -122,7 +122,7 @@
     return `
     <section class="svc-hero"><div class="container">
       <div style="max-width:640px">
-        <span class="eyebrow" style="color:var(--secondary)">Bazaar Services</span>
+        <span class="eyebrow" style="color:var(--secondary)">KeenPlaza Services</span>
         <h1 class="h1 mt-3" style="font-size:44px;line-height:1.1">Need help at home?<br>Book trusted professionals.</h1>
         <p class="mt-4" style="color:rgba(255,255,255,.72);font-size:16px">
           Background-verified experts, upfront pricing and a 30-day service warranty.
@@ -156,10 +156,10 @@
     <section class="section"><div class="container">
       <div class="card card-pad" style="background:linear-gradient(120deg,var(--primary-900),var(--primary));color:#fff;border:none">
         <div class="row-between wrap gap-5">
-          <div style="max-width:52ch"><span class="eyebrow" style="color:var(--accent)">⚡ Bazaar exclusive</span>
+          <div style="max-width:52ch"><span class="eyebrow" style="color:var(--accent)">⚡ KeenPlaza exclusive</span>
             <h3 class="h3 mt-2" style="color:#fff">Buy the product. Book the pro. One cart.</h3>
             <p class="mt-3" style="color:rgba(255,255,255,.75)">
-              Bought an AC, TV, washing machine or furniture on Bazaar? Add professional installation
+              Bought an AC, TV, washing machine or furniture on KeenPlaza? Add professional installation
               or assembly to the same order and we schedule the visit right after delivery.</p></div>
           <div class="col gap-2" style="min-width:280px">${bundles.slice(0, 3).map(b => `
             <div class="row-between gap-3" style="background:rgba(255,255,255,.1);padding:12px 14px;border-radius:12px">
@@ -384,7 +384,7 @@
     }
     if (bk.step === 5) {
       const methods = [['upi', 'UPI', '🟣', 'GPay, PhonePe, Paytm'], ['card', 'Credit / Debit Card', '💳', 'Visa, Mastercard, RuPay'],
-        ['wallet', 'Bazaar Wallet', '👛', 'Balance ₹1,250'], ['cod', 'Pay after service', '💵', 'Cash or UPI to the professional']];
+        ['wallet', 'KeenPlaza Wallet', '👛', 'Balance ₹1,250'], ['cod', 'Pay after service', '💵', 'Cash or UPI to the professional']];
       return `<h4 class="h4 mb-4">Payment</h4>
         <div class="col gap-3">${methods.map(([k, l, e, d]) => `
           <label class="pay-opt ${bk.pay === k ? 'on' : ''}" data-pay="${k}"><span class="em">${e}</span>
@@ -505,7 +505,7 @@
         ${pkg ? `<div class="bundle mt-6"><span class="flag">${icon('zap', 13)} Customers also bought</span>
           <div class="row-between gap-3 mt-3 wrap"><div class="row gap-3">
             <span style="font-size:26px">🛍️</span><div class="col"><b class="small">Products that pair with this service</b>
-              <span class="tiny muted">AC covers, filters, stabilisers and more on Bazaar</span></div></div>
+              <span class="tiny muted">AC covers, filters, stabilisers and more on KeenPlaza</span></div></div>
             <a class="btn btn-sm" style="background:var(--secondary);color:#fff" href="index.html#/plp/all">Shop now</a></div></div>` : ''}
       </div></div></div>`;
   });
@@ -521,7 +521,7 @@
     <div class="card card-pad mt-8" style="background:linear-gradient(120deg,var(--secondary-100),var(--primary-50))">
       <div class="row-between wrap gap-4"><div class="col">
         <b class="h4">Are you a skilled professional?</b>
-        <p class="muted small mt-2">Join Bazaar Services — steady jobs, weekly payouts, free training and insurance.</p></div>
+        <p class="muted small mt-2">Join KeenPlaza Services — steady jobs, weekly payouts, free training and insurance.</p></div>
         <button class="btn btn-primary" id="joinPro">Partner with us</button></div></div>
   </div>`);
   after.pros = () => $('#joinPro').onclick = () => modal({ title: 'Partner as a professional', size: 'modal-sm',
@@ -538,7 +538,7 @@
   /* ============ FOOTER + BOOT ============ */
   function footerHTML() {
     return `<div class="container"><div class="foot-grid">
-      <div><a href="index.html" class="logo" style="color:#fff"><span class="mark">B</span><span>Bazaar</span></a>
+      <div><a href="index.html" class="logo" style="color:#fff"><span class="mark">${icon('logo', 20)}</span><span>KeenPlaza</span></a>
         <p class="small mt-3" style="max-width:34ch">Buy it. Book it. Install it. Maintain it. One platform.</p></div>
       <div><h6>Services</h6>${M.serviceCategories.slice(0, 5).map(c => `<a href="#/cat/${c.id}">${esc(c.name)}</a>`).join('')}</div>
       <div><h6>For customers</h6><a href="index.html#/account/bookings">My bookings</a><a href="index.html#/cart">Cart</a>
@@ -546,7 +546,7 @@
       <div><h6>For professionals</h6><a href="#/pros">Partner with us</a><a href="#/pros">Training</a><a href="#/pros">Payouts</a></div>
       <div><h6>Company</h6><a href="index.html">Shop products</a><a href="admin.html">Admin</a><a href="mobile.html">Mobile app</a></div>
     </div>
-    <div class="foot-bottom"><span>© 2026 Bazaar Commerce Pvt Ltd · Prototype — data is fictional.</span></div></div>`;
+    <div class="foot-bottom"><span>© 2026 KeenPlaza Commerce Pvt Ltd · Prototype — data is fictional.</span></div></div>`;
   }
 
   function boot() {

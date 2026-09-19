@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — mobile.js
+   KEENPLAZA — mobile.js
    Mobile app prototype: 22 screens inside a 390×844 device frame.
    Screens share the same mock data and cart store as the web app.
    ============================================================ */
@@ -80,8 +80,8 @@
 
   /* ============ SCREENS ============ */
   screen('splash', () => `${statusbar()}
-    <div class="m-splash"><span class="mark">B</span>
-      <b style="font-size:26px;letter-spacing:-.02em">Bazaar</b>
+    <div class="m-splash"><span class="mark">${icon('logo', 44)}</span>
+      <b style="font-size:26px;letter-spacing:-.02em">KeenPlaza</b>
       <span style="opacity:.75;font-size:13px">Products Today. Services Tomorrow.</span>
       <div class="mt-6" style="width:120px"><div class="progress" style="background:rgba(255,255,255,.2)">
         <i style="width:70%;background:#fff"></i></div></div></div>`);
@@ -409,7 +409,7 @@
     <div class="app-body">
       <div class="app-pad"><div class="row gap-3 mt-2"><span class="avatar avatar-lg">AS</span>
         <div class="col"><b>Aarav Sharma</b><span class="tiny muted">+91 98200 41122</span>
-          <span class="badge badge-primary mt-1">Bazaar Plus</span></div></div>
+          <span class="badge badge-primary mt-1">KeenPlaza Plus</span></div></div>
         <div class="grid grid-3 mt-4" style="gap:8px">
           <div class="mini-kpi center"><b>14</b><span>Orders</span></div>
           <div class="mini-kpi center"><b>5</b><span>Bookings</span></div>
@@ -443,7 +443,7 @@
             <span class="col grow" style="text-align:left"><b class="tiny">${esc(p.name)}</b>
               <span class="tiny muted">${inr(p.price)} · ${esc(p.duration)} · ${p.rating}★</span></span>
             <span class="btn btn-primary btn-sm">Book</span></button>`; }).join('')}</div></div>
-      <div class="app-sec app-pad"><div class="m-banner"><b class="small">⚡ Bought an appliance on Bazaar?</b>
+      <div class="app-sec app-pad"><div class="m-banner"><b class="small">⚡ Bought an appliance on KeenPlaza?</b>
         <p class="tiny muted mt-1">Add installation to your order and we schedule it right after delivery.</p></div></div>
       <div style="height:16px"></div></div>${tabbar()}`);
 

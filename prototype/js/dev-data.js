@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — dev-data.js
+   KEENPLAZA — dev-data.js
    The engineering spec behind the prototype: services, endpoints,
    request flows, tech stack, environments and release process.
    Consumed by dev-mode.js (live tracer) and dev.js (spec page).
@@ -9,11 +9,11 @@
 
   /* ---------- 1. RUNTIME TOPOLOGY ---------- */
   const hosts = {
-    web:     { id: 'web',     name: 'Storefront (React 19 + Vite SSR)',  host: 'www.bazaar.in',            tier: 'edge' },
+    web:     { id: 'web',     name: 'Storefront (React 19 + Vite SSR)',  host: 'www.keenplaza.in',            tier: 'edge' },
     app:     { id: 'app',     name: 'Mobile App (React Native)', host: 'app build',                 tier: 'client' },
-    admin:   { id: 'admin',   name: 'Admin Console (React 19 + Vite)', host: 'admin.bazaar.in',           tier: 'edge' },
-    cdn:     { id: 'cdn',     name: 'CDN + WAF (CloudFront)',    host: 'cdn.bazaar.in',             tier: 'edge' },
-    gw:      { id: 'gw',      name: 'API Gateway (Kong)',        host: 'api.bazaar.in',             tier: 'gateway' },
+    admin:   { id: 'admin',   name: 'Admin Console (React 19 + Vite)', host: 'admin.keenplaza.in',           tier: 'edge' },
+    cdn:     { id: 'cdn',     name: 'CDN + WAF (CloudFront)',    host: 'cdn.keenplaza.in',             tier: 'edge' },
+    gw:      { id: 'gw',      name: 'API Gateway (Kong)',        host: 'api.keenplaza.in',             tier: 'gateway' },
     identity:{ id: 'identity',name: 'identity-service',          host: 'identity.svc.cluster.local:8080', tier: 'service' },
     catalog: { id: 'catalog', name: 'catalog-service',           host: 'catalog.svc.cluster.local:8080',  tier: 'service' },
     search:  { id: 'search',  name: 'search-service',            host: 'search.svc.cluster.local:8080',   tier: 'service' },
@@ -27,7 +27,7 @@
     logistics:{id: 'logistics',name:'logistics-service',         host: 'logistics.svc.cluster.local:8080',tier: 'service' },
     notify:  { id: 'notify',  name: 'notification-service',      host: 'notify.svc.cluster.local:8080',   tier: 'service' },
     media:   { id: 'media',   name: 'media-service',             host: 'media.svc.cluster.local:8080',    tier: 'service' },
-    analytics:{id:'analytics',name: 'analytics-collector',       host: 'events.bazaar.in',                tier: 'service' },
+    analytics:{id:'analytics',name: 'analytics-collector',       host: 'events.keenplaza.in',                tier: 'service' },
     pg:      { id: 'pg',      name: 'PostgreSQL 16 (primary)',   host: 'pg-primary:5432',           tier: 'data' },
     pgro:    { id: 'pgro',    name: 'PostgreSQL (read replica)', host: 'pg-replica:5432',           tier: 'data' },
     es:      { id: 'es',      name: 'OpenSearch',                host: 'search-cluster:9200',       tier: 'data' },
@@ -36,7 +36,7 @@
     razorpay:{ id: 'razorpay',name: 'Razorpay',                  host: 'api.razorpay.com',          tier: 'external' },
     delhivery:{id:'delhivery',name: 'Delhivery',                 host: 'track.delhivery.com',       tier: 'external' },
     sendgrid:{ id: 'sendgrid',name: 'SendGrid',                  host: 'api.sendgrid.com',          tier: 'external' },
-    partner: { id: 'partner', name: 'Partner App (professionals)',host:'partner.bazaar.in',         tier: 'client' }
+    partner: { id: 'partner', name: 'Partner App (professionals)',host:'partner.keenplaza.in',         tier: 'client' }
   };
 
   /* ---------- 2. SERVICE CATALOGUE ---------- */
@@ -86,7 +86,7 @@
         ['pgro', 'Postgres replica', 'SELECT … FROM products JOIN variants (on CDN miss)', 31],
         ['catalog', 'Response', '200 OK · 24 products, facets, total count', 2]
       ],
-      request: { headers: { 'x-bazaar-city': 'Mumbai', 'x-request-id': 'req_8f21…' } },
+      request: { headers: { 'x-keenplaza-city': 'Mumbai', 'x-request-id': 'req_8f21…' } },
       response: { total: 128, page: 1, items: [{ id: 'p6', name: 'LG 1.5 Ton 5 Star Split Inverter AC', brand: 'LG', price: 42999, mrp: 56990, rating: 4.6, inStock: true }] },
       events: []
     },
@@ -313,7 +313,7 @@
   ];
 
   /* ---------- 4b. GO MICROSERVICE ANATOMY ---------- */
-  const repoLayout = `bazaar/
+  const repoLayout = `keen/plaza/
 ├── services/                        one Go module per service, own go.mod, own image
 │   ├── catalog/
 │   │   ├── cmd/server/main.go       wire deps, start HTTP + gRPC, graceful shutdown
@@ -330,7 +330,7 @@
 │   ├── cart/ order/ inventory/ pricing/ payment/
 │   ├── booking/ allocation/ logistics/ notify/ identity/ search/ media/
 ├── proto/                           protobuf contracts, versioned, buf-linted
-│   └── bazaar/catalog/v1/catalog.proto
+│   └── keenplaza/catalog/v1/catalog.proto
 ├── pkg/                             shared Go libs — NOT shared business logic
 │   ├── httpx/    middleware: auth, request-id, otel, recover, rate limit
 │   ├── money/    integer paise type, no floats anywhere
@@ -371,13 +371,13 @@
   const environments = [
     { name: 'Local', url: 'localhost', data: 'Seeded fixtures (this prototype\'s mock data)', deploy: 'docker compose up',
       gate: 'Unit tests + lint pass locally', audience: 'Developer' },
-    { name: 'Dev', url: 'dev.bazaar.in', data: 'Synthetic, reset nightly', deploy: 'Auto on merge to `develop`',
+    { name: 'Dev', url: 'dev.keenplaza.in', data: 'Synthetic, reset nightly', deploy: 'Auto on merge to `develop`',
       gate: 'CI green: lint, unit, type-check, build', audience: 'Dev team' },
-    { name: 'QA / Staging', url: 'staging.bazaar.in', data: 'Anonymised production copy, weekly refresh', deploy: 'Auto on release branch cut',
+    { name: 'QA / Staging', url: 'staging.keenplaza.in', data: 'Anonymised production copy, weekly refresh', deploy: 'Auto on release branch cut',
       gate: 'Integration + E2E (Playwright) + contract tests', audience: 'QA, product, client demos' },
-    { name: 'UAT', url: 'uat.bazaar.in', data: 'Staging data + client scenarios', deploy: 'Manual promote of the tested image',
+    { name: 'UAT', url: 'uat.keenplaza.in', data: 'Staging data + client scenarios', deploy: 'Manual promote of the tested image',
       gate: 'Client sign-off checklist', audience: 'Client stakeholders' },
-    { name: 'Production', url: 'www.bazaar.in', data: 'Live', deploy: 'Manual approval → canary 10% → 100%',
+    { name: 'Production', url: 'www.keenplaza.in', data: 'Live', deploy: 'Manual approval → canary 10% → 100%',
       gate: 'Sign-off + error-budget check + rollback plan', audience: 'Customers' }
   ];
 

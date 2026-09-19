@@ -1,4 +1,4 @@
-Bazaar prototype — assets
+KeenPlaza prototype — assets
 =========================
 
 This folder is intentionally light.

@@ -1,8 +1,8 @@
-# Bazaar — Claude / Coding Instructions
+# KeenPlaza — Claude / Coding Instructions
 
 ## 1. Project identity
 
-Bazaar is a commerce + services super-app designed for the Indian market.
+KeenPlaza is a commerce + services super-app designed for the Indian market.
 
 Core product idea:
 - Customers can discover, buy, book, install, repair, maintain, and manage products/services from one platform.
@@ -301,7 +301,7 @@ Security rules:
 
 ## 12. Multi-tenant readiness
 
-Bazaar is expected to evolve into a multi-tenant platform.
+KeenPlaza is expected to evolve into a multi-tenant platform.
 
 Even when tenant functionality is not the immediate MVP, avoid domain designs that make tenant isolation impossible.
 

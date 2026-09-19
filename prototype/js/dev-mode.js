@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — dev-mode.js
+   KEENPLAZA — dev-mode.js
    Live request tracer. Toggle "Dev Mode" on any prototype screen
    and every action shows the API call it would make in production:
    endpoint, service, hop-by-hop path, payload, events, timing.
@@ -77,7 +77,7 @@
   const allOps = Object.assign({}, D.ops, extraOps);
 
   /* ---------- state ---------- */
-  const KEY = 'bazaar.devmode';
+  const KEY = 'keenplaza.devmode';
   let on = false;
   try { on = localStorage.getItem(KEY) === '1'; } catch (e) {}
   const log = [];

@@ -1,5 +1,5 @@
 /* ============================================================
-   BAZAAR — admin-modules.js  (part 2 of 2)
+   KEENPLAZA — admin-modules.js  (part 2 of 2)
    Marketing, customers, services, logistics, analytics, settings
    and the integration-architecture map. Boots the admin shell.
    ============================================================ */
@@ -190,7 +190,7 @@
         { k: 'title', label: 'Title', value: t.event, full: true },
         { k: 'body', label: 'Message body', type: 'textarea', value: t.template, full: true,
           hint: 'Variables: {{id}} {{customer}} {{courier}} {{amount}} {{pro}}' },
-        { k: 'deeplink', label: 'Deep link', value: 'bazaar://orders/{{id}}', full: true }
+        { k: 'deeplink', label: 'Deep link', value: 'keenplaza://orders/{{id}}', full: true }
       ], () => toast('Template updated'));
     });
   });
